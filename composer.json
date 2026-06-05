@@ -1,13 +1,25 @@
 {
     "name": "softspring/cms-ai-plugin",
-    "description": "An AI plugin for Armonic CMS",
+    "description": "Experimental AI-assisted content generation plugin for Armonic CMS",
     "license": "AGPL-3.0-or-later",
     "type": "sfs-cms-plugin",
     "require": {
         "php": ">=8.4",
+        "doctrine/collections": "^1.8 || ^2.0",
+        "doctrine/orm": "^2.10 || ^3.0 || ^4.0",
         "softspring/cms-bundle": "^6.0@dev",
         "softspring/form-schema": "^6.0@dev",
-        "symfony/ai-bundle": "^0.6"
+        "symfony/ai-bundle": "^0.6",
+        "symfony/dependency-injection": "^6.4 || ^7.4 || ^8.0",
+        "symfony/form": "^6.4 || ^7.4 || ^8.0",
+        "symfony/framework-bundle": "^6.4 || ^7.4 || ^8.0",
+        "symfony/http-foundation": "^6.4 || ^7.4 || ^8.0",
+        "symfony/http-kernel": "^6.4 || ^7.4 || ^8.0",
+        "symfony/intl": "^6.4 || ^7.4 || ^8.0",
+        "symfony/routing": "^6.4 || ^7.4 || ^8.0",
+        "symfony/string": "^6.4 || ^7.4 || ^8.0",
+        "symfony/validator": "^6.4 || ^7.4 || ^8.0",
+        "twig/twig": "^3.4"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.50",
@@ -17,8 +29,25 @@
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^12.5",
         "rector/rector": "^2.3",
-        "symfony/web-profiler-bundle": "^6.4 || ^7.4 || ^8.0"
+        "symfony/web-profiler-bundle": "^6.4 || ^7.4 || ^8.0",
+        "symfony/yaml": "^6.4 || ^7.4 || ^8.0"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../form-schema",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "../cms-bundle",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
@@ -45,7 +74,7 @@
     "scripts": {
         "fix": [
             "vendor/bin/rector process src tests",
-            "vendor/bin/php-cs-fixer fix",
+            "vendor/bin/php-cs-fixer fix --sequential",
             "composer normalize"
         ],
         "run-tests": [
@@ -53,10 +82,9 @@
             "XDEBUG_MODE=coverage vendor/bin/phpunit",
             "vendor/bin/rector process src tests --dry-run",
             "vendor/bin/phpstan analyse src tests --level 5",
-            "vendor/bin/php-cs-fixer fix --dry-run --diff",
+            "vendor/bin/php-cs-fixer fix --dry-run --diff --sequential",
             "vendor/bin/yaml-lint .github/ -vvv --parse-tags",
-            "vendor/bin/yaml-lint config/ -vvv --parse-tags",
-            "vendor/bin/yaml-lint translations/ -vvv --parse-tags"
+            "vendor/bin/yaml-lint config/ -vvv --parse-tags"
         ],
         "test": [
             "composer update --no-scripts --ansi",

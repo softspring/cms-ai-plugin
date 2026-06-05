@@ -9,6 +9,7 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Throwable;
 
 class AiContentLabController extends AbstractController
 {
@@ -32,26 +33,26 @@ class AiContentLabController extends AbstractController
                     'content' => $content->getId(),
                     '_locale' => $request->getLocale(),
                 ]);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->addFlash('danger', 'Could not persist generated content: '.$e->getMessage());
             }
         }
 
         $submittedData = $request->request->all('ai_content_lab');
         $contentTypes = $lab->getContentTypes();
-        $selectedContentType = is_array($submittedData) && !empty($submittedData['contentType']) ? $submittedData['contentType'] : array_key_first($contentTypes);
+        $selectedContentType = empty($submittedData['contentType']) ? array_key_first($contentTypes) : $submittedData['contentType'];
         $layouts = $selectedContentType ? $lab->getLayouts($selectedContentType) : [];
-        $selectedLayout = is_array($submittedData) && !empty($submittedData['layout']) ? $submittedData['layout'] : array_key_first($layouts);
+        $selectedLayout = empty($submittedData['layout']) ? array_key_first($layouts) : $submittedData['layout'];
         $platforms = $lab->getPlatforms();
         $defaultPlatform = array_key_first($platforms);
-        $selectedPlatform = is_array($submittedData) && !empty($submittedData['platform']) ? $submittedData['platform'] : $defaultPlatform;
+        $selectedPlatform = empty($submittedData['platform']) ? $defaultPlatform : $submittedData['platform'];
         $models = $lab->getModels($selectedPlatform);
 
         $form = $formFactory->create(AiContentLabForm::class, [
             'contentType' => $selectedContentType,
             'layout' => $selectedLayout,
             'platform' => $selectedPlatform,
-            'model' => is_array($submittedData) ? ($submittedData['model'] ?? null) : null,
+            'model' => $submittedData['model'] ?? null,
         ], [
             'content_types' => $contentTypes,
             'layouts' => $layouts,
@@ -87,7 +88,7 @@ class AiContentLabController extends AbstractController
                 if (!empty($generation['form'])) {
                     try {
                         $generationForm = $generation['form']->createView();
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         $generation['errors'][] = [
                             'path' => 'generation_form',
                             'message' => 'Generated payload could not be rendered back into the Symfony form: '.$e->getMessage(),
@@ -96,7 +97,7 @@ class AiContentLabController extends AbstractController
                         $generation['validation_exception'] ??= $e;
                     }
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $exception = $e;
             }
         }

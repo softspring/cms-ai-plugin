@@ -2,8 +2,10 @@
 
 namespace Softspring\CmsAiPlugin\Lab;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
+use JsonException;
+use RuntimeException;
 use Softspring\CmsAiPlugin\Schema\SchemaGenerator;
 use Softspring\CmsBundle\Config\CmsConfig;
 use Softspring\CmsBundle\Form\Admin\ContentVersion\VersionCreateForm;
@@ -12,12 +14,15 @@ use Softspring\CmsBundle\Manager\RouteManagerInterface;
 use Softspring\CmsBundle\Model\ContentInterface;
 use Softspring\CmsBundle\Model\ContentVersionInterface;
 use Softspring\CmsBundle\Model\SiteInterface;
+use stdClass;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\PlatformInterface;
 use Symfony\AI\Platform\Result\ObjectResult;
 use Symfony\AI\Platform\Result\TextResult;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Form\ChoiceList\View\ChoiceGroupView;
+use Symfony\Component\Form\ChoiceList\View\ChoiceView;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -25,6 +30,7 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
+use Throwable;
 
 class AiContentLab
 {
@@ -128,7 +134,7 @@ class AiContentLab
     public function generate(string $contentType, string $layout, ?string $topic, ?string $instructions, ?string $model, ?string $platformName): array
     {
         if (!$model) {
-            throw new \InvalidArgumentException('A model is required to generate AI content.');
+            throw new InvalidArgumentException('A model is required to generate AI content.');
         }
 
         $platform = $this->getPlatform($platformName);
@@ -173,7 +179,7 @@ PROMPT,
         $rawContent = match (true) {
             $result instanceof TextResult => $result->getContent(),
             $result instanceof ObjectResult => json_encode($result->getContent(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '',
-            default => throw new \RuntimeException(sprintf('Unsupported AI result type "%s".', $result::class)),
+            default => throw new RuntimeException(sprintf('Unsupported AI result type "%s".', $result::class)),
         };
 
         $payload = $this->normalizeGeneratedPayload($this->decodeJsonPayload($rawContent));
@@ -181,7 +187,7 @@ PROMPT,
 
         try {
             $validation = $this->validatePayload($contentType, $layout, $payload);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $validationException = $e;
             $validation = [
                 'valid' => false,
@@ -212,11 +218,10 @@ PROMPT,
 
         if (!$validation['valid']) {
             $firstError = $validation['errors'][0]['message'] ?? 'Generated payload is not valid for VersionCreateForm.';
-            throw new \RuntimeException($firstError);
+            throw new RuntimeException($firstError);
         }
 
         $content = $this->contentManager->createEntity($contentType);
-        \assert($content instanceof ContentInterface);
 
         $content->setName($this->buildContentName($contentType, $topic));
         $content->setDefaultLocale($this->defaultLocale);
@@ -245,7 +250,7 @@ PROMPT,
 
         $version = $content->getLastVersion();
         if (!$version instanceof ContentVersionInterface) {
-            throw new \RuntimeException('Generated content does not contain an initial version.');
+            throw new RuntimeException('Generated content does not contain an initial version.');
         }
 
         $version->setLayout($layout);
@@ -317,12 +322,12 @@ PROMPT,
 
         try {
             $decoded = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw new \RuntimeException('AI response is not valid JSON: '.$e->getMessage(), 0, $e);
+        } catch (JsonException $e) {
+            throw new RuntimeException('AI response is not valid JSON: '.$e->getMessage(), 0, $e);
         }
 
         if (!is_array($decoded)) {
-            throw new \RuntimeException('AI response JSON must decode to an object.');
+            throw new RuntimeException('AI response JSON must decode to an object.');
         }
 
         return $decoded;
@@ -335,7 +340,7 @@ PROMPT,
         $content = new $class();
 
         if (!$content instanceof ContentInterface) {
-            throw new \RuntimeException(sprintf('Configured content class "%s" must implement ContentInterface.', $class));
+            throw new RuntimeException(sprintf('Configured content class "%s" must implement ContentInterface.', $class));
         }
 
         $content->setName('AI Lab '.$contentType);
@@ -356,7 +361,7 @@ PROMPT,
         $version = new $this->contentVersionClass();
 
         if (!$version instanceof ContentVersionInterface) {
-            throw new \RuntimeException(sprintf('Configured content version class "%s" must implement ContentVersionInterface.', $this->contentVersionClass));
+            throw new RuntimeException(sprintf('Configured content version class "%s" must implement ContentVersionInterface.', $this->contentVersionClass));
         }
 
         $version->setContent($content);
@@ -382,7 +387,7 @@ PROMPT,
                 $site = new $this->siteClass();
 
                 if (!$site instanceof SiteInterface) {
-                    throw new \RuntimeException(sprintf('Configured site class "%s" must implement SiteInterface.', $this->siteClass));
+                    throw new RuntimeException(sprintf('Configured site class "%s" must implement SiteInterface.', $this->siteClass));
                 }
 
                 $site->setId((string) $siteId);
@@ -433,7 +438,7 @@ PROMPT,
 
     protected function flattenPrototypeViews(?FormView $prototypeCollectionView): array
     {
-        if (!$prototypeCollectionView) {
+        if (!$prototypeCollectionView instanceof FormView) {
             return [];
         }
 
@@ -636,12 +641,12 @@ PROMPT,
     protected function collectChoiceValues(array $choices, array &$values): void
     {
         foreach ($choices as $choice) {
-            if ($choice instanceof \Symfony\Component\Form\ChoiceList\View\ChoiceGroupView) {
+            if ($choice instanceof ChoiceGroupView) {
                 $this->collectChoiceValues($choice->choices, $values);
                 continue;
             }
 
-            if ($choice instanceof \Symfony\Component\Form\ChoiceList\View\ChoiceView) {
+            if ($choice instanceof ChoiceView) {
                 $values[] = $choice->value;
             }
         }
@@ -658,7 +663,7 @@ PROMPT,
                 is_bool($value) => 'boolean',
                 is_int($value) => 'integer',
                 is_float($value) => 'number',
-                is_numeric($value) && (string) (int) $value === (string) $value => 'integer',
+                is_numeric($value) && (string) (int) $value === $value => 'integer',
                 is_numeric($value) => 'number',
                 default => 'string',
             };
@@ -672,13 +677,13 @@ PROMPT,
         $platformName = $platformName ?: array_key_first($this->platforms->getProvidedServices());
 
         if (!$platformName || !$this->platforms->has($platformName)) {
-            throw new \RuntimeException('No AI platform is configured for the lab.');
+            throw new RuntimeException('No AI platform is configured for the lab.');
         }
 
         $platform = $this->platforms->get($platformName);
 
         if (!$platform instanceof PlatformInterface) {
-            throw new \RuntimeException(sprintf('Service "%s" is not a valid AI platform.', $platformName));
+            throw new RuntimeException(sprintf('Service "%s" is not a valid AI platform.', $platformName));
         }
 
         return $platform;
@@ -723,7 +728,7 @@ PROMPT,
         return [
             'type' => 'object',
             'properties' => $properties,
-            'required' => array_values(array_merge(['_default', '_trans_id'], $localeFields)),
+            'required' => array_merge(['_default', '_trans_id'], $localeFields),
         ];
     }
 
@@ -742,7 +747,7 @@ PROMPT,
                     'additionalProperties' => [
                         'type' => ['string', 'number', 'integer', 'boolean', 'null'],
                     ],
-                    'default' => new \stdClass(),
+                    'default' => new stdClass(),
                 ],
             ],
             'required' => ['route_name', 'route_params'],
@@ -757,7 +762,8 @@ PROMPT,
     protected function normalizeGeneratedValue(array $value): array
     {
         if ($this->isSymfonyRouteArray($value)) {
-            $value['route_name'] = isset($value['route_name']) && (is_string($value['route_name']) || is_null($value['route_name'])) ? $value['route_name'] : null;
+            $routeName = $value['route_name'] ?? null;
+            $value['route_name'] = is_string($routeName) ? $routeName : null;
             $value['route_params'] = isset($value['route_params']) && is_array($value['route_params']) ? $value['route_params'] : [];
 
             return $value;

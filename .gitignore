@@ -1,0 +1,9 @@
+.idea/
+vendor/
+composer.lock
+.coverage-report/
+.php-cs-fixer.cache
+.php_cs.cache
+.phpunit.cache/
+.phpunit.result.cache
+clover.xml
