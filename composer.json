@@ -1,0 +1,70 @@
+{
+    "name": "softspring/cms-ai-plugin",
+    "description": "An AI plugin for Armonic CMS",
+    "license": "AGPL-3.0-or-later",
+    "type": "sfs-cms-plugin",
+    "require": {
+        "php": ">=8.4",
+        "softspring/cms-bundle": "^6.0@dev",
+        "softspring/form-schema": "^6.0@dev",
+        "symfony/ai-bundle": "^0.6"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.50",
+        "friendsofphp/php-cs-fixer": "^3.94",
+        "guzzlehttp/guzzle": "^7.8.2",
+        "guzzlehttp/promises": "^2.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12.5",
+        "rector/rector": "^2.3",
+        "symfony/web-profiler-bundle": "^6.4 || ^7.4 || ^8.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Softspring\\CmsAiPlugin\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Softspring\\CmsAiPlugin\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        },
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-6.0": "6.0.x-dev"
+        }
+    },
+    "scripts": {
+        "fix": [
+            "vendor/bin/rector process src tests",
+            "vendor/bin/php-cs-fixer fix",
+            "composer normalize"
+        ],
+        "run-tests": [
+            "composer validate --strict --no-check-lock --ansi",
+            "XDEBUG_MODE=coverage vendor/bin/phpunit",
+            "vendor/bin/rector process src tests --dry-run",
+            "vendor/bin/phpstan analyse src tests --level 5",
+            "vendor/bin/php-cs-fixer fix --dry-run --diff",
+            "vendor/bin/yaml-lint .github/ -vvv --parse-tags",
+            "vendor/bin/yaml-lint config/ -vvv --parse-tags",
+            "vendor/bin/yaml-lint translations/ -vvv --parse-tags"
+        ],
+        "test": [
+            "composer update --no-scripts --ansi",
+            "@run-tests"
+        ],
+        "test-bc": [
+            "composer update --no-scripts --ansi --prefer-lowest --prefer-stable",
+            "@run-tests"
+        ]
+    }
+}

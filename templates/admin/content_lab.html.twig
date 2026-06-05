@@ -1,0 +1,163 @@
+{% extends '@SfsCms/admin_layout.html.twig' %}
+
+{% form_theme form
+    '@SfsCms/forms/cms_theme.html.twig'
+    '@SfsCms/forms/routes_theme.html.twig'
+    '@SfsCms/forms/types_theme.html.twig'
+%}
+
+{% if preview_form is defined and preview_form %}
+    {% form_theme preview_form
+        '@SfsCms/forms/cms_theme.html.twig'
+        '@SfsCms/forms/routes_theme.html.twig'
+        '@SfsCms/forms/types_theme.html.twig'
+    %}
+{% endif %}
+
+{% if generation_form is defined and generation_form %}
+    {% form_theme generation_form
+        '@SfsCms/forms/cms_theme.html.twig'
+        '@SfsCms/forms/routes_theme.html.twig'
+        '@SfsCms/forms/types_theme.html.twig'
+    %}
+{% endif %}
+
+{% block title %}CMS AI Content Lab{% endblock %}
+
+{% block breadcrums_content %}
+    {{ parent() }}
+    <li class="breadcrumb-item active" aria-current="page">CMS AI Content Lab</li>
+{% endblock breadcrums_content %}
+
+{% block content %}
+    <h1 class="h3 mb-4">CMS AI Content Lab</h1>
+
+    <div class="container-fluid bg-white p-3 mb-4">
+        {{ form_start(form) }}
+            {{ form_errors(form) }}
+
+            <div class="row">
+                <div class="col-md-3">{{ form_row(form.contentType) }}</div>
+                <div class="col-md-3">{{ form_row(form.layout) }}</div>
+                <div class="col-md-3">{{ form_row(form.platform) }}</div>
+                <div class="col-md-3">{{ form_row(form.model) }}</div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">{{ form_row(form.topic) }}</div>
+            </div>
+
+            {{ form_row(form.instructions) }}
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Generate Test Payload</button>
+            </div>
+
+            {% if exception %}
+                <div class="alert alert-danger mt-3 mb-0">
+                    <strong>Generation failed:</strong> {{ exception.message }}
+                </div>
+            {% endif %}
+        {{ form_end(form) }}
+    </div>
+
+    {% if selected_content_type %}
+        <div class="row g-4">
+            <div class="col-xl-6">
+                <div class="bg-white p-3 h-100">
+                    <h2 class="h5 mb-3">Preview Form Structure</h2>
+
+                    {% if preview_form %}
+                        {{ form_start(preview_form, {'attr': {'novalidate': 'novalidate'}}) }}
+                            {{ form_errors(preview_form) }}
+                            {{ form_widget(preview_form) }}
+                        {{ form_end(preview_form) }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-xl-6">
+                <div class="bg-white p-3 h-100">
+                    <h2 class="h5 mb-3">JSON Schema</h2>
+                    <pre class="small mb-0">{{ schema|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if generation %}
+        <div class="row g-4 mt-1">
+            <div class="col-xl-6">
+                <div class="bg-white p-3 h-100">
+                    <h2 class="h5 mb-3">Generated Payload</h2>
+                    <p class="mb-3">
+                        Validation:
+                        <strong class="{{ generation.is_valid ? 'text-success' : 'text-danger' }}">
+                            {{ generation.is_valid ? 'valid' : 'invalid' }}
+                        </strong>
+                    </p>
+                    <pre class="small mb-0">{{ generation.payload|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+                </div>
+            </div>
+
+            <div class="col-xl-6">
+                <div class="bg-white p-3 h-100">
+                    <h2 class="h5 mb-3">Generated Form Rendering</h2>
+
+                    {% if generation.validation_exception %}
+                        <div class="alert alert-warning">
+                            <strong>Validation/render warning:</strong> {{ generation.validation_exception.message }}
+                        </div>
+                    {% endif %}
+
+                    {% if generation_form %}
+                        {{ form_start(generation_form, {'attr': {'novalidate': 'novalidate'}}) }}
+                            {{ form_errors(generation_form) }}
+                            {{ form_widget(generation_form) }}
+                        {{ form_end(generation_form) }}
+                    {% else %}
+                        <p class="mb-0">The AI payload was generated, but Symfony could not render it back into the form.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-xl-6">
+                <div class="bg-white p-3 h-100">
+                    <h2 class="h5 mb-3">Validation Errors</h2>
+
+                    {% if generation.errors %}
+                        <ul class="mb-0">
+                            {% for error in generation.errors %}
+                                <li><code>{{ error.path }}</code>: {{ error.message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="mb-0">No validation errors.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-xl-6">
+                <div class="bg-white p-3 h-100">
+                    <h2 class="h5 mb-3">Raw AI Response</h2>
+                    <pre class="small mb-0">{{ generation.raw_response }}</pre>
+                </div>
+            </div>
+        </div>
+
+        {% if generation.is_valid %}
+            <div class="bg-white p-3 mt-4">
+                <h2 class="h5 mb-3">Create Content</h2>
+                <p class="mb-3">Create a new content of type <code>{{ selected_content_type }}</code> with a first version using the AI payload above.</p>
+
+                <form method="post">
+                    <input type="hidden" name="persist_generated_version[content_type]" value="{{ selected_content_type }}">
+                    <input type="hidden" name="persist_generated_version[layout]" value="{{ selected_layout }}">
+                    <input type="hidden" name="persist_generated_version[topic]" value="{{ form.topic.vars.value }}">
+                    <input type="hidden" name="persist_generated_version[payload_json]" value="{{ generation.payload|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES'))|e('html_attr') }}">
+                    <button type="submit" class="btn btn-success">Create New Content With AI Version</button>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock content %}

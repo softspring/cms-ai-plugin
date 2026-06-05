@@ -1,0 +1,30 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Softspring\CmsAiPlugin\Controller\:
+        resource: '../../src/Controller/*'
+        tags: [ 'controller.service_arguments' ]
+
+    Softspring\CmsAiPlugin\Form\Admin\:
+        resource: '../../src/Form/Admin/*'
+        tags: [ 'form.type' ]
+
+    Softspring\CmsAiPlugin\Lab\:
+        resource: '../../src/Lab/*'
+
+    Softspring\CmsAiPlugin\Schema\:
+        resource: '../../src/Schema/*'
+
+    Softspring\CmsAiPlugin\Lab\AiContentLab:
+        arguments:
+            $contentManager: '@Softspring\CmsBundle\Manager\ContentManagerInterface'
+            $routeManager: '@Softspring\CmsBundle\Manager\RouteManagerInterface'
+            $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
+            $contentVersionClass: '%sfs_cms.content.content_version_class%'
+            $siteClass: '%sfs_cms.site.class%'
+            $sites: '%sfs_cms.sites%'
+            $enabledLocales: '%kernel.enabled_locales%'
+            $defaultLocale: '%kernel.default_locale%'
