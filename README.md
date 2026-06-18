@@ -6,7 +6,7 @@
 [![PHP Version](https://img.shields.io/packagist/dependency-v/softspring/cms-ai-plugin/php?style=flat-square)](https://github.com/softspring/cms-ai-plugin/blob/6.0/composer.json)
 [![Downloads](https://img.shields.io/packagist/dt/softspring/cms-ai-plugin?style=flat-square)](https://packagist.org/packages/softspring/cms-ai-plugin)
 [![CI](https://img.shields.io/github/actions/workflow/status/softspring/cms-ai-plugin/ci.yml?branch=6.0&style=flat-square&label=CI)](https://github.com/softspring/cms-ai-plugin/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/codecov/c/github/softspring/cms-ai-plugin?branch=6.0&style=flat-square)](https://codecov.io/gh/softspring/cms-ai-plugin)
+[![Coverage](https://img.shields.io/codecov/c/github/softspring/cms-ai-plugin?branch=6.0&style=flat-square)](https://app.codecov.io/gh/softspring/cms-ai-plugin/tree/6.0)
 
 `softspring/cms-ai-plugin` adds experimental AI-assisted content generation tools to Armonic CMS.
 
