@@ -14,6 +14,7 @@ This plugin is in active development. It is useful for experimentation and early
 - Provide an admin content lab screen.
 - Extend the CMS content version edit screen with an AI agent panel.
 - Provide an admin MCP chatbot screen for testing read-only CMS MCP tools.
+- Show server-side processing duration and provider token usage metadata in the MCP chatbot when available.
 - Provide a site-level AI settings tab in CMS site administration.
 - Store site-level AI instructions in `site.metadata.sfs_cms_ai`.
 - Expose read-only CMS MCP tools for site context, published content search, published content detail, internal links, and menu context.
@@ -22,6 +23,7 @@ This plugin is in active development. It is useful for experimentation and early
 - Generate schemas for CMS content version forms.
 - Prompt AI platforms to generate valid JSON payloads for a selected content type and layout.
 - Prompt AI platforms to return draft form patches for the current unsaved CMS version edit session.
+- Keep the normal CMS Save action as the only action that creates a new content version from editor changes.
 - Include configured site-level AI instructions in content generation prompts.
 - Decode and normalize model responses.
 - Validate generated payloads with Symfony forms.
@@ -51,3 +53,4 @@ This plugin is in active development. It is useful for experimentation and early
 - Model behavior is provider-dependent.
 - MCP tools are read-only and expose published CMS data only.
 - The plugin does not configure AI platforms by itself; the host application must provide them.
+- AI-assisted admin requests can take longer than normal CMS requests and need aligned runtime timeouts in the host application.

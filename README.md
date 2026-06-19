@@ -86,6 +86,8 @@ The plugin exposes an admin MCP chatbot route:
 
 The chatbot uses the configured Symfony AI platform and the registered read-only CMS MCP tools. It is intended for testing whether the model can inspect existing published CMS content, site context, internal links, and menus through MCP before producing an answer.
 
+The chatbot shows processing metadata below each assistant answer. Duration is measured server-side around the full model and tool-call loop. Token usage is shown when the configured Symfony AI platform and model provider report it through result metadata.
+
 ## Site AI Settings
 
 The plugin adds an `AI` tab to CMS site administration pages. Editors can store site-specific instructions such as site description, target audience, editorial tone, brand voice, content guidelines, SEO guidance, forbidden topics, and extra instructions.
@@ -101,6 +103,14 @@ The content lab includes these instructions in the prompt for the sites that all
 ## Current Scope
 
 This package is an experimental integration plugin. It is not part of the CMS core and should remain optional because it depends on AI platforms, credentials, model behavior, and generated content review workflows.
+
+## Operational Notes
+
+The plugin needs a configured Symfony AI platform and model. Without that configuration, admin screens can be visible but requests cannot be processed.
+
+Generated changes should be reviewed before saving because model output depends on the provider, model, prompt, site context, and current form payload.
+
+AI-assisted admin requests use the `/admin/{_locale}/cms-ai/` path prefix and can take longer than normal CMS requests while waiting for the model provider. Keep PHP-FPM, Cloud Run, CDN, proxy, and web-server timeouts aligned when changing those workflows.
 
 ## Contributing
 
