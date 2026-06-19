@@ -1,0 +1,55 @@
+site:
+    tabs_menu:
+        ai: "IA"
+    ai:
+        meta:
+            title: "Configuración de IA para %name%"
+        breadcrumb: "IA"
+        title: "Instrucciones para la IA"
+        description: "Estas instrucciones se guardan en el metadata del site y pueden ser usadas por los flujos de IA que necesiten contexto específico del site."
+        success_flash: "Las instrucciones de IA se han guardado."
+        actions:
+            cancel: "Cancelar"
+            save: "Guardar cambios"
+            close_alert: "Cerrar"
+        form:
+            siteDescription:
+                label: "Descripción del site"
+                help: "Explica de qué trata este site, sus productos, servicios, mercados y elementos diferenciales."
+            targetAudience:
+                label: "Público objetivo"
+                help: "Describe para quién es el contenido y qué sabe o necesita esa audiencia."
+            editorialTone:
+                label: "Tono editorial"
+                help: "Define el tono que debe usar la IA, por ejemplo formal, directo, técnico, cercano o comercial."
+            brandVoice:
+                label: "Voz de marca"
+                help: "Añade vocabulario preferido, expresiones, posicionamiento y reglas de estilo."
+            contentGuidelines:
+                label: "Guía de contenido"
+                help: "Añade reglas de estructura, secciones obligatorias, llamadas a la acción, formato y criterios de revisión."
+            seoGuidelines:
+                label: "Guía SEO"
+                help: "Añade indicaciones sobre keywords, intención de búsqueda, metadata, enlazado interno y encabezados."
+            forbiddenTopics:
+                label: "Temas prohibidos"
+                help: "Lista claims, temas, expresiones, competidores o áreas sensibles que la IA debe evitar."
+            extraInstructions:
+                label: "Instrucciones extra"
+                help: "Añade cualquier otra instrucción persistente que deba aplicarse a este site."
+media:
+    image_generation:
+        form:
+            prompt:
+                label: "Generar imagen con IA"
+                help: "Describe la imagen que quieres generar. Déjalo vacío para subir un archivo manualmente."
+                placeholder: "Ejemplo: Una imagen editorial limpia de un equipo Symfony trabajando en un dashboard de producto, luz natural, estilo realista."
+            platform:
+                label: "Plataforma IA"
+            model:
+                label: "Modelo"
+            actions:
+                generate: "Generar previsualización"
+            status:
+                generating: "Generando imagen..."
+                error: "No se ha podido generar la imagen."

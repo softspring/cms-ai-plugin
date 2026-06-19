@@ -1,0 +1,274 @@
+.sfs-cms-ai-chatbot-page,
+.sfs-cms-ai-chatbot-grid,
+.sfs-cms-ai-chatbot-column,
+.sfs-cms-ai-chatbot-sidebar,
+.sfs-cms-ai-chatbot {
+    min-height: 0;
+}
+
+.sfs-cms-ai-chatbot-admin-page .sfs-admin-content > .container-fluid {
+    padding-bottom: 1rem !important;
+}
+
+.sfs-cms-ai-chatbot-page {
+    overflow: hidden;
+}
+
+.sfs-cms-ai-chatbot-page {
+    flex: 1 1 auto;
+}
+
+.sfs-cms-ai-chatbot-grid {
+    flex: 1 1 0;
+}
+
+.sfs-cms-ai-chatbot-page,
+.sfs-cms-ai-chatbot-column,
+.sfs-cms-ai-chatbot-sidebar,
+.sfs-cms-ai-chatbot {
+    height: 100%;
+}
+
+.sfs-cms-ai-chatbot-grid {
+    overflow: hidden;
+}
+
+.sfs-cms-ai-chatbot-column,
+.sfs-cms-ai-chatbot-sidebar,
+.sfs-cms-ai-chatbot {
+    overflow: hidden;
+}
+
+.sfs-cms-ai-chatbot-thread {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.sfs-cms-ai-chatbot-form {
+    flex-shrink: 0;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--bs-border-color, transparent);
+}
+
+.sfs-cms-ai-chatbot-question {
+    margin-bottom: 0.75rem !important;
+}
+
+.sfs-cms-ai-chatbot-form textarea {
+    resize: vertical;
+}
+
+.sfs-cms-ai-chatbot-composer-bar {
+    min-height: 2.5rem;
+}
+
+.sfs-cms-ai-chatbot-model-controls {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.sfs-cms-ai-chatbot-control {
+    width: min(15rem, 36vw);
+    min-width: 9rem;
+}
+
+.sfs-cms-ai-chatbot-model-control {
+    width: min(20rem, 42vw);
+}
+
+.sfs-cms-ai-chatbot-submit {
+    flex: 0 0 auto;
+}
+
+.sfs-cms-ai-chatbot-tool-calls {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.sfs-cms-ai-chatbot-tool-calls pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.sfs-cms-ai-chatbot-tools {
+    max-height: 35%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.sfs-cms-ai-message {
+    display: flex;
+    margin-bottom: 0.75rem;
+}
+
+.sfs-cms-ai-message-user {
+    justify-content: flex-end;
+}
+
+.sfs-cms-ai-message-content {
+    max-width: min(760px, 86%);
+}
+
+.sfs-cms-ai-message-user .sfs-cms-ai-message-content {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+}
+
+.sfs-cms-ai-message-body {
+    max-width: 100%;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid var(--bs-border-color, transparent);
+    border-radius: 0.5rem;
+    color: var(--bs-body-color);
+    background: var(--bs-light);
+    white-space: pre-wrap;
+}
+
+.sfs-cms-ai-message-user .sfs-cms-ai-message-body {
+    color: var(--bs-white);
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.sfs-cms-ai-message-assistant.is-thinking .sfs-cms-ai-message-body {
+    color: var(--bs-gray-600);
+    font-style: italic;
+}
+
+.sfs-cms-ai-message-assistant.is-error .sfs-cms-ai-message-body {
+    color: var(--bs-danger);
+    background: rgba(var(--bs-danger-rgb), 0.12);
+    border-color: rgba(var(--bs-danger-rgb), 0.25);
+}
+
+.sfs-cms-ai-message-meta {
+    margin-top: 0.25rem;
+    color: var(--bs-secondary-color, var(--bs-gray-600));
+    font-size: 0.75rem;
+    line-height: 1.3;
+}
+
+@media (max-width: 1199.98px) {
+    .sfs-cms-ai-chatbot-page,
+    .sfs-cms-ai-chatbot-column,
+    .sfs-cms-ai-chatbot-sidebar,
+    .sfs-cms-ai-chatbot {
+        height: auto;
+    }
+
+    .sfs-cms-ai-chatbot-grid {
+        flex: 0 1 auto;
+    }
+
+    .sfs-cms-ai-chatbot {
+        min-height: 70vh;
+        overflow: visible;
+    }
+
+    .sfs-cms-ai-chatbot-tools {
+        max-height: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sfs-cms-ai-chatbot-composer-bar,
+    .sfs-cms-ai-chatbot-model-controls {
+        align-items: stretch !important;
+        flex-direction: column;
+    }
+
+    .sfs-cms-ai-chatbot-control,
+    .sfs-cms-ai-chatbot-model-control,
+    .sfs-cms-ai-chatbot-submit {
+        width: 100%;
+    }
+}
+
+@media (min-width: 1200px) {
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-main,
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-content,
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-content > .container-fluid {
+        min-height: 0;
+    }
+
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-main,
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-content,
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-content > .container-fluid {
+        overflow: hidden !important;
+    }
+
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-content,
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-content > .container-fluid {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+    }
+
+    .sfs-cms-ai-chatbot-admin-page .sfs-admin-content > .container-fluid {
+        height: 100%;
+        padding-bottom: 1rem !important;
+    }
+}
+
+.sfs-cms-ai-markdown {
+    white-space: normal;
+}
+
+.sfs-cms-ai-markdown h3,
+.sfs-cms-ai-markdown h4,
+.sfs-cms-ai-markdown h5,
+.sfs-cms-ai-markdown h6 {
+    margin: 1rem 0 0.5rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.sfs-cms-ai-markdown h3:first-child,
+.sfs-cms-ai-markdown h4:first-child,
+.sfs-cms-ai-markdown h5:first-child,
+.sfs-cms-ai-markdown h6:first-child {
+    margin-top: 0;
+}
+
+.sfs-cms-ai-markdown p {
+    margin-bottom: 0.625rem;
+}
+
+.sfs-cms-ai-markdown p:last-child,
+.sfs-cms-ai-markdown ul:last-child,
+.sfs-cms-ai-markdown ol:last-child {
+    margin-bottom: 0;
+}
+
+.sfs-cms-ai-markdown ul,
+.sfs-cms-ai-markdown ol {
+    margin: 0 0 0.75rem 1.25rem;
+    padding-left: 0.75rem;
+}
+
+.sfs-cms-ai-markdown li {
+    margin-bottom: 0.375rem;
+}
+
+.sfs-cms-ai-markdown hr {
+    margin: 1rem 0;
+}
+
+.sfs-cms-ai-markdown code {
+    color: inherit;
+}
+
+.sfs-cms-ai-markdown-image {
+    display: block;
+    max-width: 300px;
+    max-height: 180px;
+    width: auto;
+    height: auto;
+    margin: 0.5rem 0;
+    border-radius: 4px;
+}

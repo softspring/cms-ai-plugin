@@ -1,0 +1,128 @@
+.sfs-cms-ai-content-editor-page .cms-content {
+    min-height: 0;
+}
+
+.sfs-cms-ai-content-editor-shell {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.sfs-cms-ai-content-agent-panel {
+    flex: 0 0 380px;
+    width: 380px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.sfs-cms-ai-content-agent {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding: 1rem;
+}
+
+.sfs-cms-ai-content-agent-header {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.sfs-cms-ai-content-agent-thread {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 0.25rem;
+}
+
+.sfs-cms-ai-content-agent-message {
+    display: flex;
+    margin-bottom: 0.75rem;
+}
+
+.sfs-cms-ai-content-agent-message-user {
+    justify-content: flex-end;
+}
+
+.sfs-cms-ai-content-agent-message-body {
+    max-width: 92%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--bs-border-color, transparent);
+    border-radius: 0.5rem;
+    color: var(--bs-body-color);
+    background: var(--bs-light);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.sfs-cms-ai-content-agent-message-user .sfs-cms-ai-content-agent-message-body {
+    color: var(--bs-white);
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.sfs-cms-ai-content-agent-message-assistant.is-thinking .sfs-cms-ai-content-agent-message-body {
+    color: var(--bs-gray-600);
+    font-style: italic;
+}
+
+.sfs-cms-ai-content-agent-message-assistant.is-error .sfs-cms-ai-content-agent-message-body {
+    color: var(--bs-danger);
+    background: rgba(var(--bs-danger-rgb), 0.12);
+    border-color: rgba(var(--bs-danger-rgb), 0.25);
+}
+
+.sfs-cms-ai-content-agent-status,
+.sfs-cms-ai-content-agent .alert {
+    flex: 0 0 auto;
+    margin: 0.75rem 0 0;
+}
+
+.sfs-cms-ai-content-agent-form {
+    flex: 0 0 auto;
+    margin-top: 0.875rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--bs-border-color, transparent);
+}
+
+.sfs-cms-ai-content-agent-form textarea {
+    resize: vertical;
+}
+
+.sfs-cms-ai-content-agent-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    margin: 0.625rem 0;
+}
+
+.sfs-cms-ai-content-editor-main {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+@media (max-width: 1199.98px) {
+    .sfs-cms-ai-content-editor-shell {
+        flex-direction: column !important;
+        overflow: auto;
+    }
+
+    .sfs-cms-ai-content-agent-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        max-height: 45vh;
+        border-right: 0 !important;
+        border-bottom: 1px solid var(--bs-border-color, transparent);
+    }
+
+    .sfs-cms-ai-content-editor-main {
+        overflow: visible;
+    }
+}

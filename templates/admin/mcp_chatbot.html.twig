@@ -1,0 +1,181 @@
+{% set body_classes = (body_classes|default('') ~ ' sfs-cms-ai-chatbot-admin-page')|trim %}
+
+{% extends '@SfsCms/admin_layout.html.twig' %}
+
+{% form_theme form '@SfsCms/forms/cms_theme.html.twig' %}
+
+{% block title %}Armonic AI{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/sfscmsaiplugin/styles/admin/mcp-chatbot.css') }}">
+{% endblock stylesheets %}
+
+{% block breadcrums_content %}
+    {{ parent() }}
+    <li class="breadcrumb-item active" aria-current="page">Armonic AI</li>
+{% endblock breadcrums_content %}
+
+{% block content %}
+    <div class="sfs-cms-ai-chatbot-page d-flex flex-column flex-grow-1 min-vh-0">
+        <div class="d-flex flex-shrink-0 align-items-start justify-content-between gap-3 mb-4">
+            <div>
+                <h1 class="h3 mb-1">Armonic AI</h1>
+                <p class="text-muted mb-0">Ask the assistant to inspect published CMS context through the registered MCP tools.</p>
+            </div>
+
+            <a href="{{ path('sfs_cms_ai_admin_mcp_chatbot', {_locale: app.request.locale, new: 1}) }}" class="btn btn-outline-secondary flex-shrink-0">
+                <span class="bi bi-trash me-1" aria-hidden="true"></span>
+                New chat
+            </a>
+        </div>
+
+        <div class="row g-4 flex-grow-1 min-vh-0 sfs-cms-ai-chatbot-grid">
+            <div class="col-xl-8 d-flex min-vh-0 sfs-cms-ai-chatbot-column">
+                <div
+                    class="bg-white p-3 sfs-cms-ai-chatbot d-flex flex-column flex-grow-1 min-vh-0"
+                    data-mcp-chatbot
+                    data-thinking-label="Thinking..."
+                    data-error-prefix="Chatbot failed:"
+                >
+                    <div class="sfs-cms-ai-chatbot-thread" data-mcp-chatbot-thread aria-live="polite">
+                        {% if history is not empty %}
+                            {% for message in history %}
+                                {% set duration_ms = message.metrics.durationMs|default(null) %}
+                                {% set total_tokens = message.metrics.tokens.total|default(null) %}
+                                <div class="sfs-cms-ai-message sfs-cms-ai-message-{{ message.role }}">
+                                    <div class="sfs-cms-ai-message-content">
+                                        <div class="sfs-cms-ai-message-body{% if message.role == 'assistant' %} sfs-cms-ai-markdown{% endif %}"{% if message.role == 'assistant' %} data-mcp-chatbot-markdown{% endif %}>{{ message.content }}</div>
+                                        {% if message.role == 'assistant' and (duration_ms or total_tokens) %}
+                                            <div class="sfs-cms-ai-message-meta">
+                                                {% if duration_ms %}
+                                                    {{ (duration_ms / 1000)|number_format(2, '.', '') }} s
+                                                {% endif %}
+                                                {% if duration_ms and total_tokens %} · {% endif %}
+                                                {% if total_tokens %}
+                                                    {{ total_tokens|number_format(0, '.', ',') }} tokens
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="sfs-cms-ai-message sfs-cms-ai-message-assistant">
+                                <div class="sfs-cms-ai-message-content">
+                                    <div class="sfs-cms-ai-message-body sfs-cms-ai-markdown">Ask a question to test the CMS MCP tools with the selected model.</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="sfs-cms-ai-chatbot-status flex-shrink-0 text-muted small mt-3 d-none" data-mcp-chatbot-status>
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                        <span data-mcp-chatbot-status-text>Thinking...</span>
+                    </div>
+
+                    <div class="alert alert-danger flex-shrink-0 mt-3 d-none" data-mcp-chatbot-error></div>
+
+                    {{ form_start(form, {
+                        attr: {
+                            class: 'sfs-cms-ai-chatbot-form mt-3',
+                            'data-mcp-chatbot-form': '',
+                            'data-mcp-chatbot-tool-calls-target': '#mcp-chatbot-tool-calls'
+                        }
+                    }) }}
+                        {{ form_errors(form) }}
+
+                        {{ form_row(form.question, {
+                            row_attr: {
+                                class: 'sfs-cms-ai-chatbot-question'
+                            },
+                            attr: {
+                                rows: 3,
+                                placeholder: 'Ask about published content, links, menus, or site context...',
+                                'data-mcp-chatbot-input': ''
+                            }
+                        }) }}
+
+                        <div class="sfs-cms-ai-chatbot-composer-bar d-flex align-items-end justify-content-between gap-3">
+                            <div class="sfs-cms-ai-chatbot-model-controls d-flex align-items-end gap-2">
+                                <div class="sfs-cms-ai-chatbot-control">
+                                    {{ form_label(form.platform, null, {label_attr: {class: 'form-label small text-muted mb-1'}}) }}
+                                    {{ form_widget(form.platform, {attr: {class: 'form-select form-select-sm'}}) }}
+                                    {{ form_errors(form.platform) }}
+                                </div>
+                                <div class="sfs-cms-ai-chatbot-control sfs-cms-ai-chatbot-model-control">
+                                    {{ form_label(form.model, null, {label_attr: {class: 'form-label small text-muted mb-1'}}) }}
+                                    {{ form_widget(form.model, {attr: {class: 'form-select form-select-sm'}}) }}
+                                    {{ form_errors(form.model) }}
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary sfs-cms-ai-chatbot-submit" data-mcp-chatbot-submit>
+                                <span class="bi bi-send me-1" aria-hidden="true"></span>
+                                Send
+                            </button>
+                        </div>
+
+                        {% if exception %}
+                            <div class="alert alert-danger mt-3 mb-0">
+                                <strong>Chatbot failed:</strong> {{ exception.message }}
+                            </div>
+                        {% endif %}
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <div class="col-xl-4 d-flex flex-column min-vh-0 gap-4 sfs-cms-ai-chatbot-sidebar">
+                <div class="bg-white p-3 flex-shrink-0 sfs-cms-ai-chatbot-tools">
+                    <h2 class="h5 mb-3">Available MCP Tools</h2>
+
+                    {% if tools %}
+                        <ul class="mb-0">
+                            {% for tool in tools %}
+                                <li class="mb-2">
+                                    <code>{{ tool.name }}</code>
+                                    {% if tool.description %}
+                                        <br><span class="small text-muted">{{ tool.description }}</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="mb-0">No CMS MCP tools are registered.</p>
+                    {% endif %}
+                </div>
+
+                <div class="bg-white p-3 flex-grow-1 sfs-cms-ai-chatbot-tool-calls" id="mcp-chatbot-tool-calls">
+                    <h2 class="h5 mb-3">MCP Tool Calls</h2>
+
+                    <div data-mcp-chatbot-tool-calls>
+                        {% if tool_calls is not empty %}
+                            {% for call in tool_calls %}
+                                <div class="border-top pt-3 mt-3">
+                                    <p class="mb-2">
+                                        <code>{{ call.name }}</code>
+                                        {% if call.error %}
+                                            <span class="badge bg-danger ms-2">error</span>
+                                        {% endif %}
+                                    </p>
+
+                                    <h3 class="h6">Arguments</h3>
+                                    <pre class="small">{{ call.arguments|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+                                    <h3 class="h6">Result</h3>
+                                    <pre class="small mb-0">{{ call.content }}</pre>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted mb-0" data-mcp-chatbot-tool-calls-empty>No tool calls yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script defer src="{{ asset('bundles/sfscmsaiplugin/scripts/admin/mcp-chatbot.js') }}"></script>
+{% endblock javascripts %}

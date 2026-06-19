@@ -4,12 +4,23 @@ services:
         autoconfigure: true
         public: false
 
+    _instanceof:
+        Symfony\Component\Form\FormTypeExtensionInterface:
+            tags: [ 'form.type_extension' ]
+
     Softspring\CmsAiPlugin\Controller\:
         resource: '../../src/Controller/*'
         tags: [ 'controller.service_arguments' ]
 
+    Softspring\CmsAiPlugin\Command\:
+        resource: '../../src/Command/*'
+
     Softspring\CmsAiPlugin\Form\Admin\:
         resource: '../../src/Form/Admin/*'
+        tags: [ 'form.type' ]
+
+    Softspring\CmsAiPlugin\Form\Admin\Site\:
+        resource: '../../src/Form/Admin/Site/*'
         tags: [ 'form.type' ]
 
     Softspring\CmsAiPlugin\Lab\:
@@ -18,13 +29,64 @@ services:
     Softspring\CmsAiPlugin\Schema\:
         resource: '../../src/Schema/*'
 
+    Softspring\CmsAiPlugin\Mcp\:
+        resource: '../../src/Mcp/*'
+
+    Softspring\CmsAiPlugin\Media\:
+        resource: '../../src/Media/*'
+
+    Softspring\CmsAiPlugin\Admin\ActionListener\:
+        resource: '../../src/Admin/ActionListener/*'
+
+    Softspring\CmsAiPlugin\Form\Extension\MediaAiImageCreateTypeExtension:
+        arguments:
+            $mediaTypesCollection: '@Softspring\MediaBundle\Type\MediaTypesCollection'
+            $requirementsDescriber: '@Softspring\CmsAiPlugin\Media\MediaImageRequirementsDescriber'
+            $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
+            $urlGenerator: '@router'
+            $requestStack: '@request_stack'
+            $translator: '@translator'
+        tags: [ 'form.type_extension' ]
+
+    Softspring\CmsAiPlugin\Media\AiImageGenerator:
+        arguments:
+            $httpClient: '@http_client'
+            $requirementsDescriber: '@Softspring\CmsAiPlugin\Media\MediaImageRequirementsDescriber'
+            $openAiApiKey: '%env(OPENAI_API_KEY)%'
+
+    Softspring\CmsAiPlugin\Media\AiImageDescriber:
+        arguments:
+            $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
+
+    Softspring\CmsAiPlugin\Admin\Menu\SiteMenuProvider:
+        tags: [ 'sfs_cms.admin_menu.menu_provider' ]
+
+    Softspring\CmsAiPlugin\Admin\Routing\SiteRoutingProvider:
+        tags: [ 'sfs_cms.routing_provider' ]
+
+    sfs_cms.ai_plugin.admin.site_ai.controller:
+        class: Softspring\CmsAiPlugin\Controller\Admin\SiteAiController
+        public: true
+
     Softspring\CmsAiPlugin\Lab\AiContentLab:
         arguments:
             $contentManager: '@Softspring\CmsBundle\Manager\ContentManagerInterface'
             $routeManager: '@Softspring\CmsBundle\Manager\RouteManagerInterface'
             $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
             $contentVersionClass: '%sfs_cms.content.content_version_class%'
-            $siteClass: '%sfs_cms.site.class%'
-            $sites: '%sfs_cms.sites%'
             $enabledLocales: '%kernel.enabled_locales%'
             $defaultLocale: '%kernel.default_locale%'
+
+    Softspring\CmsAiPlugin\Lab\McpChatLab:
+        arguments:
+            $registry: '@mcp.registry'
+            $server: '@mcp.server'
+            $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
+            $mcpToolServices: !tagged_locator { tag: 'mcp.tool' }
+            $requestStack: '@request_stack'
+
+    Softspring\CmsAiPlugin\Lab\ContentEditorAgent:
+        arguments:
+            $registry: '@mcp.registry'
+            $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
+            $mcpToolServices: !tagged_locator { tag: 'mcp.tool' }

@@ -2,7 +2,6 @@
 
 namespace Softspring\CmsAiPlugin\Lab;
 
-use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use JsonException;
 use RuntimeException;
@@ -13,7 +12,6 @@ use Softspring\CmsBundle\Manager\ContentManagerInterface;
 use Softspring\CmsBundle\Manager\RouteManagerInterface;
 use Softspring\CmsBundle\Model\ContentInterface;
 use Softspring\CmsBundle\Model\ContentVersionInterface;
-use Softspring\CmsBundle\Model\SiteInterface;
 use stdClass;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
@@ -30,22 +28,23 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
+use Symfony\Contracts\Service\ResetInterface;
 use Throwable;
+use function is_array;
 
 class AiContentLab
 {
+    protected const SITE_AI_METADATA_FIELD = 'sfs_cms_ai';
+
     public function __construct(
         protected CmsConfig $cmsConfig,
         protected SchemaGenerator $schemaGenerator,
         protected FormFactoryInterface $formFactory,
-        protected EntityManagerInterface $entityManager,
         protected ContentManagerInterface $contentManager,
         protected RouteManagerInterface $routeManager,
         protected ServiceLocator $platforms,
         protected SluggerInterface $slugger,
         protected string $contentVersionClass,
-        protected string $siteClass,
-        protected array $sites = [],
         protected array $enabledLocales = [],
         protected string $defaultLocale = 'en',
     ) {
@@ -139,6 +138,7 @@ class AiContentLab
 
         $platform = $this->getPlatform($platformName);
         $schema = $this->getSchema($contentType, $layout);
+        $siteInstructions = $this->getSiteInstructionsForContentType($contentType);
 
         $messages = new MessageBag();
         $messages->add(Message::forSystem(<<<PROMPT
@@ -159,6 +159,9 @@ Topic:
 Editorial instructions:
 %s
 
+Site AI context:
+%s
+
 Enabled locales: %s
 Default locale: %s
 
@@ -169,6 +172,7 @@ PROMPT,
             $layout,
             trim((string) $topic) ?: 'No topic provided',
             trim((string) $instructions) ?: 'No extra instructions provided',
+            [] !== $siteInstructions ? json_encode($siteInstructions, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : 'No site-specific AI instructions configured',
             json_encode($this->enabledLocales, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             $this->defaultLocale,
             json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
@@ -181,6 +185,7 @@ PROMPT,
             $result instanceof ObjectResult => json_encode($result->getContent(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '',
             default => throw new RuntimeException(sprintf('Unsupported AI result type "%s".', $result::class)),
         };
+        $this->resetTraceablePlatform($platform);
 
         $payload = $this->normalizeGeneratedPayload($this->decodeJsonPayload($rawContent));
         $validationException = null;
@@ -263,7 +268,7 @@ PROMPT,
         return $content;
     }
 
-    protected function validatePayload(string $contentType, string $layout, array $payload): array
+    public function validatePayload(string $contentType, string $layout, array $payload): array
     {
         $form = $this->createPreviewForm($contentType, $layout, null, 'generated_version_payload');
         $form->submit($payload);
@@ -373,31 +378,24 @@ PROMPT,
 
     protected function getSiteEntitiesForContentType(string $contentType): array
     {
-        $siteEntities = [];
-        $siteRepository = $this->entityManager->getRepository($this->siteClass);
+        return array_values($this->cmsConfig->getSitesForContent($contentType));
+    }
 
-        foreach ($this->sites as $siteId => $siteConfig) {
-            if (!in_array($contentType, $siteConfig['allowed_content_types'] ?? [], true)) {
+    protected function getSiteInstructionsForContentType(string $contentType): array
+    {
+        $siteInstructions = [];
+
+        foreach ($this->getSiteEntitiesForContentType($contentType) as $site) {
+            $instructions = $site->getMetadataField(self::SITE_AI_METADATA_FIELD, []);
+
+            if (!is_array($instructions) || [] === $instructions) {
                 continue;
             }
 
-            $site = $siteRepository->find($siteId);
-
-            if (!$site) {
-                $site = new $this->siteClass();
-
-                if (!$site instanceof SiteInterface) {
-                    throw new RuntimeException(sprintf('Configured site class "%s" must implement SiteInterface.', $this->siteClass));
-                }
-
-                $site->setId((string) $siteId);
-                $site->setConfig($siteConfig);
-            }
-
-            $siteEntities[] = $site;
+            $siteInstructions[$site->getId() ?? (string) $site] = $instructions;
         }
 
-        return $siteEntities;
+        return $siteInstructions;
     }
 
     protected function ensureLayoutAllowed(string $contentType, string $layout): void
@@ -689,6 +687,13 @@ PROMPT,
         return $platform;
     }
 
+    protected function resetTraceablePlatform(PlatformInterface $platform): void
+    {
+        if ($platform instanceof ResetInterface) {
+            $platform->reset();
+        }
+    }
+
     protected function isTranslatableFieldView(FormView $view): bool
     {
         if ([] === $view->children) {
@@ -752,6 +757,11 @@ PROMPT,
             ],
             'required' => ['route_name', 'route_params'],
         ];
+    }
+
+    public function normalizePayload(array $payload): array
+    {
+        return $this->normalizeGeneratedPayload($payload);
     }
 
     protected function normalizeGeneratedPayload(array $payload): array

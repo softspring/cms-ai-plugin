@@ -1,0 +1,63 @@
+{% trans_default_domain 'sfs_cms_ai' %}
+
+{% extends '@SfsCms/admin_layout.html.twig' %}
+
+{% form_theme form '@SfsCms/forms/cms_theme.html.twig' %}
+
+{% block title %}{{ 'site.ai.meta.title'|trans({'%name%': site|sfs_cms_site_name}) }}{% endblock %}
+
+{% block breadcrums_content %}
+    {{ parent() }}
+    <li class="breadcrumb-item"><a href="{{ url('sfs_cms_admin_sites_list') }}">{{ 'admin_sites.list.breadcrumb'|trans({}, 'sfs_cms_admin') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ url('sfs_cms_admin_sites_read', {'site': site.id}) }}">{{ 'admin_sites.read.breadcrumb'|trans({'%name%': site|sfs_cms_site_name}, 'sfs_cms_admin') }}</a></li>
+    <li class="breadcrumb-item active" aria-current="content">{{ 'site.ai.breadcrumb'|trans }}</li>
+{% endblock breadcrums_content %}
+
+{% block content %}
+    <div class="container-fluid py-4">
+        {% embed '@SfsCms/admin/site/_site_title.html.twig' with {'site': site} only %}
+        {% endembed %}
+
+        {% include '@SfsCms/admin/site/_site_tabs.html.twig' with {'current': 'ai', 'site': site} %}
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label|replace({'error':'danger'}) }} alert-dismissible fade show" role="alert">
+                    {{ message|trans({}, 'sfs_cms_ai') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ 'site.ai.actions.close_alert'|trans }}"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="card">
+            <div class="card-header bg-transparent">
+                <h2 class="h5 mb-0">{{ 'site.ai.title'|trans }}</h2>
+            </div>
+            <div class="card-body">
+                <p class="text-body-secondary">{{ 'site.ai.description'|trans }}</p>
+
+                {{ form_start(form) }}
+                    {{ form_errors(form) }}
+
+                    <div class="row g-3">
+                        <div class="col-12 col-xl-6">{{ form_row(form.siteDescription, {'help': 'site.ai.form.siteDescription.help'|trans}) }}</div>
+                        <div class="col-12 col-xl-6">{{ form_row(form.targetAudience, {'help': 'site.ai.form.targetAudience.help'|trans}) }}</div>
+                        <div class="col-12 col-xl-6">{{ form_row(form.editorialTone, {'help': 'site.ai.form.editorialTone.help'|trans}) }}</div>
+                        <div class="col-12 col-xl-6">{{ form_row(form.brandVoice, {'help': 'site.ai.form.brandVoice.help'|trans}) }}</div>
+                        <div class="col-12 col-xl-6">{{ form_row(form.contentGuidelines, {'help': 'site.ai.form.contentGuidelines.help'|trans}) }}</div>
+                        <div class="col-12 col-xl-6">{{ form_row(form.seoGuidelines, {'help': 'site.ai.form.seoGuidelines.help'|trans}) }}</div>
+                        <div class="col-12 col-xl-6">{{ form_row(form.forbiddenTopics, {'help': 'site.ai.form.forbiddenTopics.help'|trans}) }}</div>
+                        <div class="col-12 col-xl-6">{{ form_row(form.extraInstructions, {'help': 'site.ai.form.extraInstructions.help'|trans}) }}</div>
+                    </div>
+
+                    {{ form_rest(form) }}
+
+                    <div class="d-flex justify-content-end align-items-center mt-3">
+                        <a href="{{ url('sfs_cms_admin_sites_read', {'site': site.id}) }}" class="btn btn-outline-secondary">{{ 'site.ai.actions.cancel'|trans }}</a>
+                        <button type="submit" class="btn btn-primary ms-3">{{ 'site.ai.actions.save'|trans }}</button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock content %}

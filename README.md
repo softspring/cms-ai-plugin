@@ -15,6 +15,10 @@ This plugin is still in active development. The UI, prompts, generated payload f
 ## What It Provides
 
 - An admin content lab to generate test CMS content payloads with Symfony AI.
+- A content editor agent panel inside the CMS version edit screen.
+- Site-level AI instruction settings stored in CMS site metadata.
+- Read-only CMS MCP tools for site context, published content, internal links, and menus.
+- An admin MCP chatbot screen to test those tools with a configured Symfony AI platform.
 - Schema generation for CMS content version forms through `softspring/form-schema`.
 - Payload validation by rendering generated data back into Symfony forms.
 - Optional persistence of valid generated payloads as new CMS content with an initial version.
@@ -36,7 +40,21 @@ return [
 ];
 ```
 
-Configure at least one Symfony AI platform in the host application. For example, an OpenAI platform can be configured in the application using Symfony AI configuration and environment variables.
+Configure at least one Symfony AI platform in the host application. For OpenAI, install `symfony/ai-open-ai-platform`, configure the `openai` platform, and provide the API key through the `OPENAI_API_KEY` environment variable.
+
+```yaml
+# config/packages/ai_open_ai_platform.yaml
+ai:
+    platform:
+        openai:
+            api_key: '%env(OPENAI_API_KEY)%'
+```
+
+```dotenv
+OPENAI_API_KEY=
+```
+
+Do not commit real API keys. Use deployment secrets, Symfony secrets, or a local `.env.local` value.
 
 ## Admin Lab
 
@@ -47,6 +65,38 @@ The plugin exposes an admin lab route:
 ```
 
 The lab lets an administrator choose a content type, layout, AI platform, and model. It then builds a schema from the CMS form, asks the model for a JSON payload, validates the payload, and can persist it as CMS content when valid.
+
+## Content Editor Agent
+
+The plugin replaces the CMS content version edit view with a two-column layout. The left panel contains an AI agent and the right side keeps the normal CMS editor.
+
+The agent receives the current unsaved form payload, the content version schema, the selected site and locale, and the conversation history for the current edit session. It can call the registered read-only CMS MCP tools for published site context, menus, internal links, and media context.
+
+Agent responses are applied to the open browser form only. The plugin does not persist a new content version from the agent endpoint. A new CMS version is still created only when the editor manually uses the normal Save action.
+
+The conversation history is stored in the Symfony session for the current content, base version, and layout, so it is kept during the edit session between Save actions.
+
+## MCP Chatbot
+
+The plugin exposes an admin MCP chatbot route:
+
+```text
+/admin/{_locale}/cms-ai/mcp-chatbot
+```
+
+The chatbot uses the configured Symfony AI platform and the registered read-only CMS MCP tools. It is intended for testing whether the model can inspect existing published CMS content, site context, internal links, and menus through MCP before producing an answer.
+
+## Site AI Settings
+
+The plugin adds an `AI` tab to CMS site administration pages. Editors can store site-specific instructions such as site description, target audience, editorial tone, brand voice, content guidelines, SEO guidance, forbidden topics, and extra instructions.
+
+The values are stored in the CMS site metadata field under:
+
+```text
+site.metadata.sfs_cms_ai
+```
+
+The content lab includes these instructions in the prompt for the sites that allow the selected content type.
 
 ## Current Scope
 

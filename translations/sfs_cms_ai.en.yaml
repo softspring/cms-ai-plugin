@@ -1,0 +1,55 @@
+site:
+    tabs_menu:
+        ai: "AI"
+    ai:
+        meta:
+            title: "AI settings for %name%"
+        breadcrumb: "AI"
+        title: "AI instructions"
+        description: "These instructions are stored in site metadata and can be used by AI workflows that need site-specific context."
+        success_flash: "AI instructions have been saved."
+        actions:
+            cancel: "Cancel"
+            save: "Save changes"
+            close_alert: "Close"
+        form:
+            siteDescription:
+                label: "Site description"
+                help: "Explain what this site is about, its main products, services, markets, and differentiators."
+            targetAudience:
+                label: "Target audience"
+                help: "Describe who the content is for and what they already know or need."
+            editorialTone:
+                label: "Editorial tone"
+                help: "Define the tone the AI should use, such as formal, direct, technical, friendly, or commercial."
+            brandVoice:
+                label: "Brand voice"
+                help: "Add preferred vocabulary, phrases, positioning, and writing style rules."
+            contentGuidelines:
+                label: "Content guidelines"
+                help: "Add structural rules, required sections, calls to action, formatting, and review criteria."
+            seoGuidelines:
+                label: "SEO guidelines"
+                help: "Add keyword, search intent, metadata, internal linking, and heading guidance."
+            forbiddenTopics:
+                label: "Forbidden topics"
+                help: "List claims, topics, wording, competitors, or sensitive areas the AI must avoid."
+            extraInstructions:
+                label: "Extra instructions"
+                help: "Add any other persistent instruction that should apply to this site."
+media:
+    image_generation:
+        form:
+            prompt:
+                label: "Generate image with AI"
+                help: "Describe the image to generate. Leave it empty to upload a file manually."
+                placeholder: "Example: A clean editorial image of a Symfony development team working on a product dashboard, natural light, realistic style."
+            platform:
+                label: "AI platform"
+            model:
+                label: "Model"
+            actions:
+                generate: "Generate preview"
+            status:
+                generating: "Generating image..."
+                error: "Image generation failed."
