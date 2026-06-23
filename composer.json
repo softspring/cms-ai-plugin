@@ -34,22 +34,6 @@
         "symfony/web-profiler-bundle": "^6.4 || ^7.4 || ^8.0",
         "symfony/yaml": "^6.4 || ^7.4 || ^8.0"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../form-schema",
-            "options": {
-                "symlink": true
-            }
-        },
-        {
-            "type": "path",
-            "url": "../cms-bundle",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
