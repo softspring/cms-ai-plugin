@@ -1,0 +1,32 @@
+{
+    "name": "@softspring/cms-ai-plugin",
+    "license": "MIT",
+    "version": "6.0.0-dev",
+    "peerDependencies": {
+        "@softspring/cms-bundle": "*",
+        "@softspring/media-bundle": "*"
+    },
+    "devDependencies": {
+        "@softspring/cms-bundle": "file:./../vendor/softspring/cms-bundle",
+        "@softspring/media-bundle": "file:./../vendor/softspring/media-bundle"
+    },
+    "symfony": {
+        "importmap": {
+            "@softspring/cms-ai-plugin/scripts/admin/content-editor-agent.js": {
+                "path": "assets/dist/scripts/admin/content-editor-agent.js"
+            },
+            "@softspring/cms-ai-plugin/scripts/admin/mcp-chatbot.js": {
+                "path": "assets/dist/scripts/admin/mcp-chatbot.js"
+            },
+            "@softspring/cms-ai-plugin/scripts/admin/media-image-generation.js": {
+                "path": "assets/dist/scripts/admin/media-image-generation.js"
+            },
+            "@softspring/cms-ai-plugin/styles/admin/content-editor-agent.css": {
+                "path": "assets/dist/styles/admin/content-editor-agent.css"
+            },
+            "@softspring/cms-ai-plugin/styles/admin/mcp-chatbot.css": {
+                "path": "assets/dist/styles/admin/mcp-chatbot.css"
+            }
+        }
+    }
+}
