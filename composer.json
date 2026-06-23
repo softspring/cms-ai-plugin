@@ -8,6 +8,7 @@
         "doctrine/collections": "^1.8 || ^2.0",
         "doctrine/orm": "^2.10 || ^3.0 || ^4.0",
         "softspring/cms-bundle": "^6.0@dev",
+        "softspring/cms-mcp-plugin": "^6.0@dev",
         "softspring/form-schema": "^6.0@dev",
         "symfony/ai-bundle": "^0.10",
         "symfony/dependency-injection": "^6.4 || ^7.4 || ^8.0",
