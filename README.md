@@ -17,8 +17,8 @@ This plugin is still in active development. The UI, prompts, generated payload f
 - An admin content lab to generate test CMS content payloads with Symfony AI.
 - A content editor agent panel inside the CMS version edit screen.
 - Site-level AI instruction settings stored in CMS site metadata.
-- Read-only CMS MCP tools for site context, published content, internal links, and menus.
-- An admin MCP chatbot screen to test those tools with a configured Symfony AI platform.
+- Integration with read-only CMS MCP tools provided by `softspring/cms-mcp-plugin`.
+- An admin MCP chatbot screen to test registered CMS MCP tools with a configured Symfony AI platform.
 - Schema generation for CMS content version forms through `softspring/form-schema`.
 - Payload validation by rendering generated data back into Symfony forms.
 - Optional persistence of valid generated payloads as new CMS content with an initial version.
@@ -29,7 +29,7 @@ This plugin is still in active development. The UI, prompts, generated payload f
 composer require softspring/cms-ai-plugin:^6.0@dev
 ```
 
-The plugin requires `softspring/cms-bundle`, `softspring/form-schema`, and `symfony/ai-bundle`.
+The plugin requires `softspring/cms-bundle`, `softspring/cms-mcp-plugin`, `softspring/form-schema`, and `symfony/ai-bundle`.
 
 Register the bundle if Symfony Flex does not do it automatically:
 
@@ -84,7 +84,7 @@ The plugin exposes an admin MCP chatbot route:
 /admin/{_locale}/cms-ai/mcp-chatbot
 ```
 
-The chatbot uses the configured Symfony AI platform and the registered read-only CMS MCP tools. It is intended for testing whether the model can inspect existing published CMS content, site context, internal links, and menus through MCP before producing an answer.
+The chatbot uses the configured Symfony AI platform and the registered read-only CMS MCP tools. It is intended for testing whether the model can inspect existing published CMS content, site context, internal links, menus, and media context through MCP before producing an answer.
 
 The chatbot shows processing metadata below each assistant answer. Duration is measured server-side around the full model and tool-call loop. Token usage is shown when the configured Symfony AI platform and model provider report it through result metadata.
 

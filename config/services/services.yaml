@@ -29,9 +29,6 @@ services:
     Softspring\CmsAiPlugin\Schema\:
         resource: '../../src/Schema/*'
 
-    Softspring\CmsAiPlugin\Mcp\:
-        resource: '../../src/Mcp/*'
-
     Softspring\CmsAiPlugin\Media\:
         resource: '../../src/Media/*'
 
@@ -41,7 +38,7 @@ services:
     Softspring\CmsAiPlugin\Form\Extension\MediaAiImageCreateTypeExtension:
         arguments:
             $mediaTypesCollection: '@Softspring\MediaBundle\Type\MediaTypesCollection'
-            $requirementsDescriber: '@Softspring\CmsAiPlugin\Media\MediaImageRequirementsDescriber'
+            $requirementsDescriber: '@Softspring\CmsMcpPlugin\Media\MediaImageRequirementsDescriber'
             $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
             $urlGenerator: '@router'
             $requestStack: '@request_stack'
@@ -51,7 +48,7 @@ services:
     Softspring\CmsAiPlugin\Media\AiImageGenerator:
         arguments:
             $httpClient: '@http_client'
-            $requirementsDescriber: '@Softspring\CmsAiPlugin\Media\MediaImageRequirementsDescriber'
+            $requirementsDescriber: '@Softspring\CmsMcpPlugin\Media\MediaImageRequirementsDescriber'
             $openAiApiKey: '%env(OPENAI_API_KEY)%'
 
     Softspring\CmsAiPlugin\Media\AiImageDescriber:

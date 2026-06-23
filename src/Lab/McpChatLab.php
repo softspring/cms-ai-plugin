@@ -65,7 +65,7 @@ class McpChatLab
         $tools = [];
 
         foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, 'cms_')) {
+            if (!str_starts_with($tool->name, 'sfs_cms_')) {
                 continue;
             }
 
@@ -189,7 +189,7 @@ PROMPT));
         $tools = [];
 
         foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, 'cms_')) {
+            if (!str_starts_with($tool->name, 'sfs_cms_')) {
                 continue;
             }
 

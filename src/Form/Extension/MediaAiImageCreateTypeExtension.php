@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Softspring\CmsAiPlugin\Form\Extension;
 
-use Softspring\CmsAiPlugin\Media\MediaImageRequirementsDescriber;
+use Softspring\CmsMcpPlugin\Media\MediaImageRequirementsDescriber;
 use Softspring\MediaBundle\Form\Admin\MediaCreateForm;
 use Softspring\MediaBundle\Type\MediaTypesCollection;
 use Symfony\AI\Platform\Capability;

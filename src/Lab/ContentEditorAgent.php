@@ -26,6 +26,7 @@ use Symfony\AI\Platform\Tool\Tool as PlatformTool;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Contracts\Service\ResetInterface;
 use Throwable;
+
 use function is_array;
 use function is_string;
 
@@ -82,7 +83,7 @@ class ContentEditorAgent
         $tools = [];
 
         foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, 'cms_')) {
+            if (!str_starts_with($tool->name, 'sfs_cms_')) {
                 continue;
             }
 
@@ -335,7 +336,7 @@ PROMPT));
         $tools = [];
 
         foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, 'cms_')) {
+            if (!str_starts_with($tool->name, 'sfs_cms_')) {
                 continue;
             }
 
@@ -508,7 +509,7 @@ PROMPT;
         }
 
         try {
-            $reference = $this->registry->getTool('cms_get_site_context');
+            $reference = $this->registry->getTool('sfs_cms_get_site_context');
             $handler = new ReferenceHandler($this->mcpToolServices);
 
             $result = $handler->handle($reference, [

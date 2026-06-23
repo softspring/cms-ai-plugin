@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Softspring\CmsAiPlugin\Media;
 
 use RuntimeException;
+use Softspring\CmsMcpPlugin\Media\MediaImageRequirementsDescriber;
 use Symfony\Component\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

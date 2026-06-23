@@ -17,7 +17,7 @@ This plugin is in active development. It is useful for experimentation and early
 - Show server-side processing duration and provider token usage metadata in the MCP chatbot when available.
 - Provide a site-level AI settings tab in CMS site administration.
 - Store site-level AI instructions in `site.metadata.sfs_cms_ai`.
-- Expose read-only CMS MCP tools for site context, published content search, published content detail, internal links, and menu context.
+- Consume read-only CMS MCP tools provided by `softspring/cms-mcp-plugin`.
 - List configured CMS content types and compatible layouts.
 - Discover configured Symfony AI platforms and model catalogs.
 - Generate schemas for CMS content version forms.
@@ -37,13 +37,13 @@ This plugin is in active development. It is useful for experimentation and early
 - `softspring/cms-bundle` for CMS configuration, managers, content entities, and admin form types.
 - `softspring/form-schema` for form-to-schema extraction.
 - `symfony/ai-bundle` for AI platform integration.
-- `symfony/mcp-bundle` for MCP tool discovery and server integration.
+- `softspring/cms-mcp-plugin` for CMS MCP tool implementations and MCP server integration.
 
 ## Extension Points
 
 - Add support for more form fields in `form-schema` when generated schemas are incomplete.
 - Add additional AI workflows around the lab service.
-- Move MCP tooling to a dedicated plugin if the tool surface grows independently from AI content generation.
+- Keep MCP tooling in `softspring/cms-mcp-plugin` so this package can focus on admin AI experiences.
 
 ## Current Limits
 
