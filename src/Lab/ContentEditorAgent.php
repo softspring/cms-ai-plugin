@@ -27,6 +27,7 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Contracts\Service\ResetInterface;
 use Throwable;
 
+use function function_exists;
 use function is_array;
 use function is_string;
 
@@ -44,6 +45,7 @@ class ContentEditorAgent
         private readonly RegistryInterface $registry,
         private readonly ServiceLocator $platforms,
         private readonly ServiceLocator $mcpToolServices,
+        private readonly int $maxExecutionTime = 240,
     ) {
     }
 
@@ -128,6 +130,8 @@ class ContentEditorAgent
 
     public function edit(string $instruction, ?string $model, ?string $platformName, array $context, array $history = []): array
     {
+        $this->increaseExecutionTime();
+
         $instruction = trim($instruction);
         if ('' === $instruction) {
             throw new RuntimeException('An instruction is required.');
@@ -674,6 +678,15 @@ PROMPT;
         }
 
         return $platform;
+    }
+
+    private function increaseExecutionTime(): void
+    {
+        if ($this->maxExecutionTime <= 0 || !function_exists('set_time_limit')) {
+            return;
+        }
+
+        @set_time_limit($this->maxExecutionTime);
     }
 
     private function addSiteAiContextInstruction(string $instruction, array $context, ?array $siteContext): string

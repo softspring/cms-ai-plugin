@@ -8,6 +8,14 @@ services:
         Symfony\Component\Form\FormTypeExtensionInterface:
             tags: [ 'form.type_extension' ]
 
+    sfs_cms_ai.http_client:
+        class: Symfony\Contracts\HttpClient\HttpClientInterface
+        factory: [ '@http_client', 'withOptions' ]
+        arguments:
+            -
+                timeout: '%sfs_cms_ai.http_client.timeout%'
+                max_duration: '%sfs_cms_ai.http_client.max_duration%'
+
     Softspring\CmsAiPlugin\Controller\:
         resource: '../../src/Controller/*'
         tags: [ 'controller.service_arguments' ]
@@ -87,3 +95,4 @@ services:
             $registry: '@mcp.registry'
             $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
             $mcpToolServices: !tagged_locator { tag: 'mcp.tool' }
+            $maxExecutionTime: '%sfs_cms_ai.content_editor.max_execution_time%'
