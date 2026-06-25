@@ -1,0 +1,13 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Softspring\CmsAiPlugin\Seo\Content\Check\AiKeywordCoverageCheck:
+        autoconfigure: false
+        arguments:
+            $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
+            $defaultPlatform: '%sfs_cms_ai.seo_analysis.platform%'
+            $defaultModel: '%sfs_cms_ai.seo_analysis.model%'
+        tags: [ 'sfs_cms_seo.check' ]

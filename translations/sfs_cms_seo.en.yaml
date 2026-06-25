@@ -1,0 +1,12 @@
+details:
+    ai_summary: "AI summary"
+    ai_recommendations: "AI recommendations"
+    ai_error: "AI error"
+    ai_platform: "AI platform"
+    keywords: "Configured keywords"
+    matched_keywords: "Matched keywords"
+
+checks:
+    ai_keyword_coverage:
+        title: "AI keyword coverage"
+        description: "AI reviews whether the public page content naturally covers the configured SEO keywords."

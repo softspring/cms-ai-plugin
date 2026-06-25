@@ -1,0 +1,12 @@
+details:
+    ai_summary: "Resumen IA"
+    ai_recommendations: "Recomendaciones IA"
+    ai_error: "Error IA"
+    ai_platform: "Plataforma IA"
+    keywords: "Keywords configuradas"
+    matched_keywords: "Keywords cubiertas"
+
+checks:
+    ai_keyword_coverage:
+        title: "Cobertura de keywords con IA"
+        description: "La IA revisa si el contenido público de la página cubre de forma natural las keywords configuradas en SEO."
