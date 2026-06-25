@@ -35,21 +35,24 @@ services:
     Softspring\CmsAiPlugin\Admin\ActionListener\:
         resource: '../../src/Admin/ActionListener/*'
 
-    Softspring\CmsAiPlugin\Form\Extension\MediaAiImageCreateTypeExtension:
+    Softspring\CmsAiPlugin\Media\AiImageModelChoices:
         arguments:
-            $mediaTypesCollection: '@Softspring\MediaBundle\Type\MediaTypesCollection'
-            $generationRequirements: '@Softspring\CmsAiPlugin\Media\MediaImageGenerationRequirements'
             $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
-            $urlGenerator: '@router'
-            $requestStack: '@request_stack'
-            $translator: '@translator'
-        tags: [ 'form.type_extension' ]
+            $openAiImageModels: '@Softspring\CmsAiPlugin\Media\OpenAiImageModels'
+
+    Softspring\CmsAiPlugin\Media\OpenAiImageModels:
+        arguments:
+            $httpClient: '@http_client'
+            $cache: '@cache.app'
+            $logger: '@logger'
+            $openAiApiKey: '%env(OPENAI_API_KEY)%'
 
     Softspring\CmsAiPlugin\Media\AiImageGenerator:
         arguments:
             $httpClient: '@http_client'
             $generationRequirements: '@Softspring\CmsAiPlugin\Media\MediaImageGenerationRequirements'
             $openAiApiKey: '%env(OPENAI_API_KEY)%'
+            $geminiApiKey: '%env(GEMINI_API_KEY)%'
 
     Softspring\CmsAiPlugin\Media\AiImageDescriber:
         arguments:

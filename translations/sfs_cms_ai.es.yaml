@@ -39,6 +39,28 @@ site:
                 help: "Añade cualquier otra instrucción persistente que deba aplicarse a este site."
 media:
     image_generation:
+        create:
+            meta:
+                title: "Generar media con IA"
+            breadcrumb:
+                medias: "Medias"
+                current: "Generar"
+            title: "Generar media con IA"
+            form:
+                type:
+                    label: "Tipo de media"
+                prompt:
+                    help: "Describe la imagen que quieres generar. La previsualización se creará con los requisitos del tipo de media seleccionado."
+            requirements:
+                title: "Requisitos del tipo"
+            preview:
+                empty: "Genera una previsualización para verla aquí a tamaño original."
+            actions:
+                link: "Generar"
+                refresh: "Actualizar"
+                preview: "Generar previsualización"
+                create: "Crear media"
+                cancel: "Cancelar"
         form:
             prompt:
                 label: "Generar imagen con IA"

@@ -41,6 +41,7 @@ class McpChatbotController extends AbstractController
         $history = $this->getHistory($request);
         $toolCalls = $session->get(self::SESSION_TOOL_CALLS_KEY, []);
         $platforms = $lab->getPlatforms();
+        $modelsByPlatform = $lab->getModelsByPlatform();
         $defaultPlatform = array_key_first($platforms);
 
         $selectedPlatform = $submittedData['platform'] ?? $session->get(self::SESSION_PLATFORM_KEY, $defaultPlatform);
@@ -134,6 +135,7 @@ class McpChatbotController extends AbstractController
             'tool_calls' => $toolCalls,
             'exception' => $exception,
             'tools' => $lab->getAvailableTools(),
+            'models_by_platform' => $modelsByPlatform,
         ]);
     }
 

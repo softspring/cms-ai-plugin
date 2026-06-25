@@ -39,6 +39,28 @@ site:
                 help: "Add any other persistent instruction that should apply to this site."
 media:
     image_generation:
+        create:
+            meta:
+                title: "Generate AI media"
+            breadcrumb:
+                medias: "Medias"
+                current: "Generate"
+            title: "Generate AI media"
+            form:
+                type:
+                    label: "Media type"
+                prompt:
+                    help: "Describe the image to generate. The preview will be created with the selected media type requirements."
+            requirements:
+                title: "Type requirements"
+            preview:
+                empty: "Generate a preview to see it here at original size."
+            actions:
+                link: "Generate"
+                refresh: "Refresh"
+                preview: "Generate preview"
+                create: "Create media"
+                cancel: "Cancel"
         form:
             prompt:
                 label: "Generate image with AI"

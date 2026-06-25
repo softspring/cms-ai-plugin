@@ -1,0 +1,15 @@
+{% extends '@SfsMedia/admin/media/list.html.twig' %}
+
+{% block admin_medias_list_actions %}
+    {% if is_granted('PERMISSION_SFS_MEDIA_ADMIN_MEDIAS_CREATE') and media_types|length %}
+        <div class="d-flex gap-2">
+            <a href="{{ url('sfs_cms_ai_admin_media_generate_create') }}" class="btn btn-outline-primary">
+                <i class="bi bi-stars"></i>
+                {{ 'media.image_generation.create.actions.link'|trans({}, 'sfs_cms_ai') }}
+            </a>
+            {{ parent() }}
+        </div>
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock admin_medias_list_actions %}

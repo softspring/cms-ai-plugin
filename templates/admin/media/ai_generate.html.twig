@@ -1,0 +1,95 @@
+{% trans_default_domain 'sfs_cms_ai' %}
+{% extends '@SfsMedia/admin_layout.html.twig' %}
+
+{% block title %}{{ 'media.image_generation.create.meta.title'|trans }}{% endblock %}
+
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block breadcrums_content %}
+    {{ parent() }}
+    <li class="breadcrumb-item"><a href="{{ url('sfs_media_admin_medias_list') }}">{{ 'media.image_generation.create.breadcrumb.medias'|trans }}</a></li>
+    <li class="breadcrumb-item active" aria-current="content">{{ 'media.image_generation.create.breadcrumb.current'|trans }}</li>
+{% endblock breadcrums_content %}
+
+{% block content %}
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3">{{ 'media.image_generation.create.title'|trans }}</h1>
+    </div>
+
+    <div class="container-fluid bg-white p-4">
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+
+        <div class="row g-4">
+            <div class="col-12 col-xl-4">
+                {{ form_row(form.type) }}
+                {% if type_config.upload_requirements|default(false) %}
+                    <div class="small text-muted mb-3">
+                        <strong>{{ 'media.image_generation.create.requirements.title'|trans }}</strong>
+                        <ul class="mb-0 ps-3">
+                            {% for key, value in type_config.upload_requirements %}
+                                <li>{{ key }}: {{ value is iterable ? value|join(', ') : value }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {{ form_row(form.platform) }}
+                {{ form_row(form.model) }}
+                {{ form_row(form.prompt) }}
+                {{ form_widget(form.previewToken) }}
+                {{ form_widget(form.refresh) }}
+
+                <div class="d-flex justify-content-end align-items-center gap-2">
+                    {% set create_attr = {'class': 'btn btn-primary'} %}
+                    {% if not preview %}
+                        {% set create_attr = create_attr|merge({'disabled': 'disabled'}) %}
+                    {% endif %}
+                    <a href="{{ url('sfs_media_admin_medias_list') }}" class="btn btn-outline-secondary">{{ 'media.image_generation.create.actions.cancel'|trans }}</a>
+                    {{ form_widget(form.preview) }}
+                    {{ form_widget(form.create, { attr: create_attr }) }}
+                </div>
+            </div>
+            <div class="col-12 col-xl-8">
+                <div class="border bg-light p-3 overflow-auto">
+                    {% if preview %}
+                        <div class="small text-muted mb-2">
+                            {{ preview.width }}x{{ preview.height }} · {{ preview.filename }}
+                        </div>
+                        <img src="{{ preview.dataUri }}" width="{{ preview.width }}" height="{{ preview.height }}" class="d-block" alt="{{ preview.prompt }}">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center text-muted" style="min-height: 320px;">
+                            {{ 'media.image_generation.create.preview.empty'|trans }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock content %}
+
+{% block body_end %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('change', function (event) {
+            const platform = event.target.closest('[data-ai-media-image-models]');
+            if (!platform) {
+                return;
+            }
+
+            const model = document.getElementById(platform.dataset.aiMediaImageModelInput);
+            const modelsByPlatform = JSON.parse(platform.dataset.aiMediaImageModels || '{}');
+            const models = modelsByPlatform[platform.value] || {};
+
+            model.innerHTML = '';
+            Object.keys(models).forEach(function (key) {
+                const option = document.createElement('option');
+                option.value = models[key];
+                option.textContent = key;
+                model.appendChild(option);
+            });
+        });
+    </script>
+{% endblock body_end %}

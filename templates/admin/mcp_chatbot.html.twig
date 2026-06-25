@@ -100,7 +100,12 @@
                             <div class="sfs-cms-ai-chatbot-model-controls d-flex align-items-end gap-2">
                                 <div class="sfs-cms-ai-chatbot-control">
                                     {{ form_label(form.platform, null, {label_attr: {class: 'form-label small text-muted mb-1'}}) }}
-                                    {{ form_widget(form.platform, {attr: {class: 'form-select form-select-sm'}}) }}
+                                    {{ form_widget(form.platform, {attr: {
+                                        class: 'form-select form-select-sm',
+                                        'data-mcp-chatbot-platform': '',
+                                        'data-mcp-chatbot-model-input': form.model.vars.id,
+                                        'data-mcp-chatbot-models': models_by_platform|json_encode(constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))
+                                    }}) }}
                                     {{ form_errors(form.platform) }}
                                 </div>
                                 <div class="sfs-cms-ai-chatbot-control sfs-cms-ai-chatbot-model-control">

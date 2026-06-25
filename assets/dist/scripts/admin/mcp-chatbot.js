@@ -292,6 +292,39 @@
         });
     }
 
+    function updateModelOptions(platformInput) {
+        const modelInput = document.getElementById(platformInput.dataset.mcpChatbotModelInput);
+        if (!modelInput) {
+            return;
+        }
+
+        let modelsByPlatform = {};
+        try {
+            modelsByPlatform = JSON.parse(platformInput.dataset.mcpChatbotModels || '{}');
+        } catch (error) {
+            modelsByPlatform = {};
+        }
+
+        const currentValue = modelInput.value;
+        const models = modelsByPlatform[platformInput.value] || {};
+        modelInput.innerHTML = '';
+
+        Object.entries(models).forEach(([value, label]) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            modelInput.appendChild(option);
+        });
+
+        if (models[currentValue]) {
+            modelInput.value = currentValue;
+        } else if (modelInput.options.length) {
+            modelInput.options[0].selected = true;
+        }
+
+        modelInput.disabled = 0 === modelInput.options.length;
+    }
+
     async function submitChat(root, form) {
         if (root.dataset.pending === '1') {
             return;
@@ -366,6 +399,12 @@
         form.addEventListener('submit', function (event) {
             event.preventDefault();
             submitChat(root, form);
+        });
+
+        form.querySelectorAll('[data-mcp-chatbot-platform]').forEach((platformInput) => {
+            platformInput.addEventListener('change', function () {
+                updateModelOptions(platformInput);
+            });
         });
 
         input.addEventListener('keydown', function (event) {

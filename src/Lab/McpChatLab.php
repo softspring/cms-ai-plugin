@@ -63,6 +63,17 @@ class McpChatLab
         return array_combine($models, $models);
     }
 
+    public function getModelsByPlatform(): array
+    {
+        $models = [];
+
+        foreach (array_keys($this->getPlatforms()) as $platformName) {
+            $models[$platformName] = $this->getModels($platformName);
+        }
+
+        return $models;
+    }
+
     public function getAvailableTools(): array
     {
         $tools = [];
