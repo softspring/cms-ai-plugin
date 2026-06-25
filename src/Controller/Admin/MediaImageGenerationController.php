@@ -18,7 +18,7 @@ use Throwable;
 
 class MediaImageGenerationController extends AbstractController
 {
-    #[Route('/admin/{_locale}/cms-ai/media/generate-image/{type}', name: 'sfs_cms_ai_admin_media_generate_image', methods: ['POST'])]
+    #[Route('/media/generate-image/{type}', name: 'sfs_cms_ai_admin_media_generate_image', methods: ['POST'])]
     public function __invoke(
         string $type,
         Request $request,

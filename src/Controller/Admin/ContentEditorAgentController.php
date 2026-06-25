@@ -20,7 +20,7 @@ use Throwable;
 
 class ContentEditorAgentController extends AbstractController
 {
-    #[Route('/admin/{_locale}/cms-ai/content-editor-agent/{contentType}/{content}', name: 'sfs_cms_ai_admin_content_editor_agent', methods: ['POST'])]
+    #[Route('/content-editor-agent/{contentType}/{content}', name: 'sfs_cms_ai_admin_content_editor_agent', methods: ['POST'])]
     public function __invoke(
         string $contentType,
         string $content,

@@ -149,12 +149,12 @@ PROMPT));
             for ($round = 0; $round < self::MAX_TOOL_ROUNDS; ++$round) {
                 $result = $platform->invoke($model, $messages, ['tools' => array_values($tools)])->getResult();
                 $tokenUsage = $this->mergeTokenUsage($tokenUsage, $this->extractTokenUsage($result));
+                $calls = $this->extractToolCalls($result);
 
-                if (!$result instanceof ToolCallResult) {
+                if ([] === $calls) {
                     break;
                 }
 
-                $calls = $result->getContent();
                 $messages->add(Message::ofAssistant($result));
 
                 foreach ($calls as $call) {
@@ -164,7 +164,7 @@ PROMPT));
                 }
             }
 
-            if ($result instanceof ToolCallResult) {
+            if ($result && [] !== $this->extractToolCalls($result)) {
                 $messages->add(Message::ofUser(<<<PROMPT
 Stop calling tools now. Use only the tool results already provided in this conversation.
 Write the best final answer you can. If the available data is incomplete, say exactly what is missing and still provide the most useful editorial recommendation possible.
@@ -216,6 +216,29 @@ PROMPT));
         }
 
         return $tools;
+    }
+
+    /**
+     * @return ToolCall[]
+     */
+    protected function extractToolCalls(object $result): array
+    {
+        if ($result instanceof ToolCallResult) {
+            return $result->getContent();
+        }
+
+        if (!$result instanceof MultiPartResult) {
+            return [];
+        }
+
+        $toolCalls = [];
+        foreach ($result->getContent() as $part) {
+            if ($part instanceof ToolCallResult) {
+                array_push($toolCalls, ...$part->getContent());
+            }
+        }
+
+        return $toolCalls;
     }
 
     protected function executeToolCall(ToolCall $toolCall): array

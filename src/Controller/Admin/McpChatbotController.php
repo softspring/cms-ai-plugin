@@ -21,7 +21,7 @@ class McpChatbotController extends AbstractController
     protected const SESSION_HISTORY_KEY = 'sfs_cms_ai.mcp_chatbot.history';
     protected const SESSION_TOOL_CALLS_KEY = 'sfs_cms_ai.mcp_chatbot.tool_calls';
 
-    #[Route('/admin/{_locale}/cms-ai/mcp-chatbot', name: 'sfs_cms_ai_admin_mcp_chatbot')]
+    #[Route('/', name: 'sfs_cms_ai_admin_mcp_chatbot')]
     public function __invoke(Request $request, McpChatLab $lab, FormFactoryInterface $formFactory): Response
     {
         $submittedData = $request->request->all('mcp_chatbot');

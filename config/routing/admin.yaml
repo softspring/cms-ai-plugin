@@ -1,0 +1,3 @@
+_sfs_cms_ai_admin:
+    resource: "../../src/Controller/Admin/"
+    type: attribute
