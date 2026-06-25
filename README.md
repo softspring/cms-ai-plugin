@@ -8,20 +8,19 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/softspring/cms-ai-plugin/ci.yml?branch=6.0&style=flat-square&label=CI)](https://github.com/softspring/cms-ai-plugin/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/softspring/cms-ai-plugin?branch=6.0&style=flat-square)](https://app.codecov.io/gh/softspring/cms-ai-plugin/tree/6.0)
 
-`softspring/cms-ai-plugin` adds experimental AI-assisted content generation tools to Armonic CMS.
+`softspring/cms-ai-plugin` adds AI-assisted admin workflows to Armonic CMS.
 
-This plugin is still in active development. The UI, prompts, generated payload format, persistence flow, and integration points may change before the first stable release.
+This plugin is still in active development. The UI, prompts, generated payload format, and integration points may change before the first stable release.
 
 ## What It Provides
 
-- An admin content lab to generate test CMS content payloads with Symfony AI.
+- An admin Armonic AI chatbot screen.
 - A content editor agent panel inside the CMS version edit screen.
+- Media image generation and image description helpers for Media Bundle admin workflows.
 - Site-level AI instruction settings stored in CMS site metadata.
 - Integration with read-only CMS MCP tools provided by `softspring/cms-mcp-plugin`.
-- An admin MCP chatbot screen to test registered CMS MCP tools with a configured Symfony AI platform.
 - Schema generation for CMS content version forms through `softspring/form-schema`.
-- Payload validation by rendering generated data back into Symfony forms.
-- Optional persistence of valid generated payloads as new CMS content with an initial version.
+- Payload validation by rendering AI-generated draft changes back into Symfony forms.
 
 ## Installation
 
@@ -56,35 +55,27 @@ OPENAI_API_KEY=
 
 Do not commit real API keys. Use deployment secrets, Symfony secrets, or a local `.env.local` value.
 
-## Admin Lab
-
-The plugin exposes an admin lab route:
-
-```text
-/admin/{_locale}/cms-ai/content-lab
-```
-
-The lab lets an administrator choose a content type, layout, AI platform, and model. It then builds a schema from the CMS form, asks the model for a JSON payload, validates the payload, and can persist it as CMS content when valid.
-
 ## Content Editor Agent
 
 The plugin replaces the CMS content version edit view with a two-column layout. The left panel contains an AI agent and the right side keeps the normal CMS editor.
 
-The agent receives the current unsaved form payload, the content version schema, the selected site and locale, and the conversation history for the current edit session. It can call the registered read-only CMS MCP tools for published site context, menus, internal links, and media context.
+The agent receives the current unsaved form payload, the content version schema, the selected site and locale, and the conversation history for the current edit session. It can call the registered read-only CMS MCP tools for published site context, menus, internal links, analytics, and media context.
 
 Agent responses are applied to the open browser form only. The plugin does not persist a new content version from the agent endpoint. A new CMS version is still created only when the editor manually uses the normal Save action.
 
 The conversation history is stored in the Symfony session for the current content, base version, and layout, so it is kept during the edit session between Save actions.
 
-## MCP Chatbot
+The editor panel includes a collapsible JSON debug view with the returned patch payload, merged payload, tool calls, and raw model response.
 
-The plugin exposes an admin MCP chatbot route:
+## Armonic AI Chatbot
+
+The plugin exposes an admin Armonic AI chatbot route:
 
 ```text
 /admin/{_locale}/cms-ai/mcp-chatbot
 ```
 
-The chatbot uses the configured Symfony AI platform and the registered read-only CMS MCP tools. It is intended for testing whether the model can inspect existing published CMS content, site context, internal links, menus, and media context through MCP before producing an answer.
+The chatbot uses the configured Symfony AI platform and the registered read-only CMS MCP tools. It is intended for inspecting existing published CMS content, site context, internal links, menus, analytics, and media context through MCP before producing an answer.
 
 The chatbot shows processing metadata below each assistant answer. Duration is measured server-side around the full model and tool-call loop. Token usage is shown when the configured Symfony AI platform and model provider report it through result metadata.
 
@@ -98,7 +89,7 @@ The values are stored in the CMS site metadata field under:
 site.metadata.sfs_cms_ai
 ```
 
-The content lab includes these instructions in the prompt for the sites that allow the selected content type.
+The content editor agent includes these instructions in the prompt when a selected site provides them.
 
 ## Current Scope
 

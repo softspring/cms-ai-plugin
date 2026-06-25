@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Softspring\CmsAiPlugin\Media;
 
 use RuntimeException;
-use Softspring\CmsMcpPlugin\Media\MediaImageRequirementsDescriber;
 use Symfony\Component\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -13,7 +12,7 @@ class AiImageGenerator
 {
     public function __construct(
         protected HttpClientInterface $httpClient,
-        protected MediaImageRequirementsDescriber $requirementsDescriber,
+        protected MediaImageGenerationRequirements $generationRequirements,
         protected string $openAiApiKey,
         protected string $defaultPlatform = 'openai',
         protected string $defaultModel = 'gpt-image-1',
@@ -34,7 +33,7 @@ class AiImageGenerator
             throw new RuntimeException(sprintf('The "%s" AI platform is not supported for media image generation yet.', $platform));
         }
 
-        $size = $this->resolveSizeForModel($this->requirementsDescriber->resolveGenerationSize($uploadRequirements), $model);
+        $size = $this->resolveSizeForModel($this->generationRequirements->resolveGenerationSize($uploadRequirements), $model);
         $contents = $this->requestOpenAiImage($this->buildPrompt($prompt, $uploadRequirements, $size), $size, $model);
 
         $path = tempnam(sys_get_temp_dir(), 'sfs-cms-ai-media-');
@@ -128,7 +127,7 @@ class AiImageGenerator
 
     protected function buildPrompt(string $prompt, array $uploadRequirements, string $size): string
     {
-        $requirements = $this->requirementsDescriber->buildPromptRequirements($uploadRequirements, $size);
+        $requirements = $this->generationRequirements->buildPromptRequirements($uploadRequirements, $size);
 
         return implode("\n", [
             'Create a production-ready website media image from this prompt.',

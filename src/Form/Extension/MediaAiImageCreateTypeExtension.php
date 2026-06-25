@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Softspring\CmsAiPlugin\Form\Extension;
 
-use Softspring\CmsMcpPlugin\Media\MediaImageRequirementsDescriber;
+use Softspring\CmsAiPlugin\Media\MediaImageGenerationRequirements;
 use Softspring\MediaBundle\Form\Admin\MediaCreateForm;
 use Softspring\MediaBundle\Type\MediaTypesCollection;
 use Symfony\AI\Platform\Capability;
@@ -28,7 +28,7 @@ class MediaAiImageCreateTypeExtension extends AbstractTypeExtension
 
     public function __construct(
         protected MediaTypesCollection $mediaTypesCollection,
-        protected MediaImageRequirementsDescriber $requirementsDescriber,
+        protected MediaImageGenerationRequirements $generationRequirements,
         protected ServiceLocator $platforms,
         protected UrlGeneratorInterface $urlGenerator,
         protected RequestStack $requestStack,
@@ -118,7 +118,7 @@ class MediaAiImageCreateTypeExtension extends AbstractTypeExtension
             return false;
         }
 
-        return $this->requirementsDescriber->supportsPngOutput($typeConfig['upload_requirements'] ?? []);
+        return $this->generationRequirements->supportsPngOutput($typeConfig['upload_requirements'] ?? []);
     }
 
     protected function getImageModelsByPlatform(): array

@@ -155,6 +155,44 @@
         box.classList.toggle('d-none', !message);
     }
 
+    function prettyJson(value) {
+        if (value === undefined || value === null || value === '') {
+            return '';
+        }
+
+        if (typeof value === 'string') {
+            try {
+                return JSON.stringify(JSON.parse(value), null, 2);
+            } catch (error) {
+                return value;
+            }
+        }
+
+        return JSON.stringify(value, null, 2);
+    }
+
+    function setDebugValue(root, selector, value) {
+        const element = root.querySelector(selector);
+        if (!element) {
+            return;
+        }
+
+        element.textContent = prettyJson(value);
+    }
+
+    function showDebug(root, payload) {
+        const debug = root.querySelector('[data-cms-ai-content-editor-debug]');
+        if (!debug) {
+            return;
+        }
+
+        setDebugValue(root, '[data-cms-ai-content-editor-debug-payload]', payload.payload || {});
+        setDebugValue(root, '[data-cms-ai-content-editor-debug-merged-payload]', payload.mergedPayload || {});
+        setDebugValue(root, '[data-cms-ai-content-editor-debug-tool-calls]', payload.toolCalls || []);
+        setDebugValue(root, '[data-cms-ai-content-editor-debug-raw-response]', payload.rawResponse || '');
+        debug.classList.remove('d-none');
+    }
+
     function clearMessages(root) {
         showBox(root, '[data-cms-ai-content-editor-error]', '');
         showBox(root, '[data-cms-ai-content-editor-validation]', '');
@@ -563,6 +601,7 @@
             }
 
             applyPayload(root, payload.payload || {}, !!payload.replaceCollections);
+            showDebug(root, payload);
             thinking.remove();
             addMessage(thread, 'assistant', payload.answer || 'Draft updated.');
             showBox(root, '[data-cms-ai-content-editor-validation]', payload.isValid === false ? validationMessage(payload.errors || []) : '');
@@ -614,6 +653,8 @@
 
             thread.innerHTML = '';
             addMessage(thread, 'assistant', 'Ready.');
+            const debug = root.querySelector('[data-cms-ai-content-editor-debug]');
+            debug && debug.classList.add('d-none');
 
             if (input) {
                 input.value = '';

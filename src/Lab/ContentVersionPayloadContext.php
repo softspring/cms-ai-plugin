@@ -2,23 +2,12 @@
 
 namespace Softspring\CmsAiPlugin\Lab;
 
-use InvalidArgumentException;
-use JsonException;
 use RuntimeException;
-use Softspring\CmsAiPlugin\Schema\SchemaGenerator;
 use Softspring\CmsBundle\Config\CmsConfig;
 use Softspring\CmsBundle\Form\Admin\ContentVersion\VersionCreateForm;
-use Softspring\CmsBundle\Manager\ContentManagerInterface;
-use Softspring\CmsBundle\Manager\RouteManagerInterface;
 use Softspring\CmsBundle\Model\ContentInterface;
 use Softspring\CmsBundle\Model\ContentVersionInterface;
 use stdClass;
-use Symfony\AI\Platform\Message\Message;
-use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\PlatformInterface;
-use Symfony\AI\Platform\Result\ObjectResult;
-use Symfony\AI\Platform\Result\TextResult;
-use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\ChoiceList\View\ChoiceGroupView;
 use Symfony\Component\Form\ChoiceList\View\ChoiceView;
 use Symfony\Component\Form\FormError;
@@ -26,24 +15,13 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
-use Symfony\Contracts\Service\ResetInterface;
-use Throwable;
-use function is_array;
 
-class AiContentLab
+class ContentVersionPayloadContext
 {
-    protected const SITE_AI_METADATA_FIELD = 'sfs_cms_ai';
-
     public function __construct(
         protected CmsConfig $cmsConfig,
-        protected SchemaGenerator $schemaGenerator,
         protected FormFactoryInterface $formFactory,
-        protected ContentManagerInterface $contentManager,
-        protected RouteManagerInterface $routeManager,
-        protected ServiceLocator $platforms,
-        protected SluggerInterface $slugger,
         protected string $contentVersionClass,
         protected array $enabledLocales = [],
         protected string $defaultLocale = 'en',
@@ -72,27 +50,6 @@ class AiContentLab
         }
 
         return array_combine($allowedLayouts, $allowedLayouts);
-    }
-
-    public function getPlatforms(): array
-    {
-        $platforms = array_keys($this->platforms->getProvidedServices());
-
-        return array_combine($platforms, $platforms);
-    }
-
-    public function getModels(?string $platformName): array
-    {
-        if (!$platformName) {
-            return [];
-        }
-
-        $platform = $this->getPlatform($platformName);
-        $models = array_keys($platform->getModelCatalog()->getModels());
-
-        sort($models);
-
-        return array_combine($models, $models);
     }
 
     public function getContentConfig(string $contentType): array
@@ -128,144 +85,6 @@ class AiContentLab
         $view = $form->createView();
 
         return $this->buildVersionSchemaFromView($view, $layout);
-    }
-
-    public function generate(string $contentType, string $layout, ?string $topic, ?string $instructions, ?string $model, ?string $platformName): array
-    {
-        if (!$model) {
-            throw new InvalidArgumentException('A model is required to generate AI content.');
-        }
-
-        $platform = $this->getPlatform($platformName);
-        $schema = $this->getSchema($contentType, $layout);
-        $siteInstructions = $this->getSiteInstructionsForContentType($contentType);
-
-        $messages = new MessageBag();
-        $messages->add(Message::forSystem(<<<PROMPT
-You generate test payloads for a Symfony CMS content version form.
-Return only one valid JSON object.
-Do not wrap the response in Markdown.
-Respect the provided JSON schema exactly.
-Do not invent fields outside the schema.
-For translated objects, "_default" must be a locale code like "en" or "es", and "_trans_id" must be a technical random id.
-PROMPT));
-
-        $messages->add(Message::ofUser(sprintf(<<<PROMPT
-Generate a realistic test payload for the CMS content type "%s" using layout "%s".
-
-Topic:
-%s
-
-Editorial instructions:
-%s
-
-Site AI context:
-%s
-
-Enabled locales: %s
-Default locale: %s
-
-JSON schema:
-%s
-PROMPT,
-            $contentType,
-            $layout,
-            trim((string) $topic) ?: 'No topic provided',
-            trim((string) $instructions) ?: 'No extra instructions provided',
-            [] !== $siteInstructions ? json_encode($siteInstructions, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : 'No site-specific AI instructions configured',
-            json_encode($this->enabledLocales, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            $this->defaultLocale,
-            json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-        )));
-
-        $result = $platform->invoke($model, $messages)->getResult();
-
-        $rawContent = match (true) {
-            $result instanceof TextResult => $result->getContent(),
-            $result instanceof ObjectResult => json_encode($result->getContent(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '',
-            default => throw new RuntimeException(sprintf('Unsupported AI result type "%s".', $result::class)),
-        };
-        $this->resetTraceablePlatform($platform);
-
-        $payload = $this->normalizeGeneratedPayload($this->decodeJsonPayload($rawContent));
-        $validationException = null;
-
-        try {
-            $validation = $this->validatePayload($contentType, $layout, $payload);
-        } catch (Throwable $e) {
-            $validationException = $e;
-            $validation = [
-                'valid' => false,
-                'errors' => [[
-                    'path' => 'validation',
-                    'message' => $e->getMessage(),
-                    'code' => null,
-                ]],
-                'form' => null,
-            ];
-        }
-
-        return [
-            'schema' => $schema,
-            'raw_response' => $rawContent,
-            'payload' => $payload,
-            'is_valid' => $validation['valid'],
-            'errors' => $validation['errors'],
-            'form' => $validation['form'],
-            'validation_exception' => $validationException,
-        ];
-    }
-
-    public function persistGeneratedVersion(string $contentType, string $layout, array $payload, ?string $topic = null): ContentInterface
-    {
-        $this->ensureLayoutAllowed($contentType, $layout);
-        $validation = $this->validatePayload($contentType, $layout, $payload);
-
-        if (!$validation['valid']) {
-            $firstError = $validation['errors'][0]['message'] ?? 'Generated payload is not valid for VersionCreateForm.';
-            throw new RuntimeException($firstError);
-        }
-
-        $content = $this->contentManager->createEntity($contentType);
-
-        $content->setName($this->buildContentName($contentType, $topic));
-        $content->setDefaultLocale($this->defaultLocale);
-        $content->setLocales($this->enabledLocales);
-
-        $sites = $this->getSiteEntitiesForContentType($contentType);
-        foreach ($sites as $site) {
-            $content->addSite($site);
-        }
-
-        $route = $this->routeManager->createEntity();
-        $routeId = $this->buildRouteId($content->getName() ?: $contentType);
-        $route->setId($routeId);
-        $route->setContent($content);
-        foreach ($sites as $site) {
-            $route->addSite($site);
-        }
-
-        $path = $route->getPaths()->first();
-        if ($path) {
-            $path->setLocale($this->defaultLocale);
-            $path->setPath($this->buildRoutePath($content->getName() ?: $contentType));
-        }
-
-        $content->addRoute($route);
-
-        $version = $content->getLastVersion();
-        if (!$version instanceof ContentVersionInterface) {
-            throw new RuntimeException('Generated content does not contain an initial version.');
-        }
-
-        $version->setLayout($layout);
-        $version->setData($payload['data'] ?? []);
-        $version->setOriginDescription('Generated by CMS AI Lab');
-        $version->setNote('Generated by AI Lab');
-
-        $this->contentManager->saveEntity($content);
-
-        return $content;
     }
 
     public function validatePayload(string $contentType, string $layout, array $payload): array
@@ -306,38 +125,6 @@ PROMPT,
         ];
     }
 
-    protected function decodeJsonPayload(string $content): array
-    {
-        $content = trim($content);
-
-        if (str_starts_with($content, '```')) {
-            $content = preg_replace('/^```[a-zA-Z0-9_-]*\s*/', '', $content) ?? $content;
-            $content = preg_replace('/\s*```$/', '', $content) ?? $content;
-            $content = trim($content);
-        }
-
-        if (!str_starts_with($content, '{')) {
-            $start = strpos($content, '{');
-            $end = strrpos($content, '}');
-
-            if (false !== $start && false !== $end && $end > $start) {
-                $content = substr($content, $start, $end - $start + 1);
-            }
-        }
-
-        try {
-            $decoded = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw new RuntimeException('AI response is not valid JSON: '.$e->getMessage(), 0, $e);
-        }
-
-        if (!is_array($decoded)) {
-            throw new RuntimeException('AI response JSON must decode to an object.');
-        }
-
-        return $decoded;
-    }
-
     protected function createDummyContent(string $contentType): ContentInterface
     {
         $contentConfig = $this->getContentConfig($contentType);
@@ -348,7 +135,7 @@ PROMPT,
             throw new RuntimeException(sprintf('Configured content class "%s" must implement ContentInterface.', $class));
         }
 
-        $content->setName('AI Lab '.$contentType);
+        $content->setName('AI '.$contentType);
         $content->setDefaultLocale($this->defaultLocale);
         $content->setLocales($this->enabledLocales);
         $content->setExtraData([]);
@@ -379,23 +166,6 @@ PROMPT,
     protected function getSiteEntitiesForContentType(string $contentType): array
     {
         return array_values($this->cmsConfig->getSitesForContent($contentType));
-    }
-
-    protected function getSiteInstructionsForContentType(string $contentType): array
-    {
-        $siteInstructions = [];
-
-        foreach ($this->getSiteEntitiesForContentType($contentType) as $site) {
-            $instructions = $site->getMetadataField(self::SITE_AI_METADATA_FIELD, []);
-
-            if (!is_array($instructions) || [] === $instructions) {
-                continue;
-            }
-
-            $siteInstructions[$site->getId() ?? (string) $site] = $instructions;
-        }
-
-        return $siteInstructions;
     }
 
     protected function ensureLayoutAllowed(string $contentType, string $layout): void
@@ -670,30 +440,6 @@ PROMPT,
         return 1 === count($types) ? $types[0] : 'string';
     }
 
-    protected function getPlatform(?string $platformName): PlatformInterface
-    {
-        $platformName = $platformName ?: array_key_first($this->platforms->getProvidedServices());
-
-        if (!$platformName || !$this->platforms->has($platformName)) {
-            throw new RuntimeException('No AI platform is configured for the lab.');
-        }
-
-        $platform = $this->platforms->get($platformName);
-
-        if (!$platform instanceof PlatformInterface) {
-            throw new RuntimeException(sprintf('Service "%s" is not a valid AI platform.', $platformName));
-        }
-
-        return $platform;
-    }
-
-    protected function resetTraceablePlatform(PlatformInterface $platform): void
-    {
-        if ($platform instanceof ResetInterface) {
-            $platform->reset();
-        }
-    }
-
     protected function isTranslatableFieldView(FormView $view): bool
     {
         if ([] === $view->children) {
@@ -819,28 +565,5 @@ PROMPT,
     protected function generateTranslationId(): string
     {
         return 't_'.bin2hex(random_bytes(6));
-    }
-
-    protected function buildContentName(string $contentType, ?string $topic = null): string
-    {
-        $topic = trim((string) $topic);
-
-        if ('' !== $topic) {
-            return $topic;
-        }
-
-        return sprintf('AI %s %s', $contentType, date('Y-m-d H:i'));
-    }
-
-    protected function buildRouteId(string $name): string
-    {
-        $slug = str_replace('-', '_', strtolower($this->slugger->slug($name)->toString()));
-
-        return trim($slug, '_').'_'.date('Ymd_His');
-    }
-
-    protected function buildRoutePath(string $name): string
-    {
-        return strtolower($this->slugger->slug($name)->toString());
     }
 }

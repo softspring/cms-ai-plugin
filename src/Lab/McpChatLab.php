@@ -13,9 +13,11 @@ use RuntimeException;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\PlatformInterface;
+use Symfony\AI\Platform\Result\MultiPartResult;
 use Symfony\AI\Platform\Result\ObjectResult;
 use Symfony\AI\Platform\Result\ResultInterface;
 use Symfony\AI\Platform\Result\TextResult;
+use Symfony\AI\Platform\Result\ThinkingResult;
 use Symfony\AI\Platform\Result\ToolCall;
 use Symfony\AI\Platform\Result\ToolCallResult;
 use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
@@ -29,6 +31,7 @@ use Throwable;
 class McpChatLab
 {
     protected const MAX_TOOL_ROUNDS = 6;
+    protected const CMS_TOOL_PREFIX = 'sfs_cms_';
 
     public function __construct(
         protected RegistryInterface $registry,
@@ -65,7 +68,7 @@ class McpChatLab
         $tools = [];
 
         foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, 'sfs_cms_')) {
+            if (!str_starts_with($tool->name, self::CMS_TOOL_PREFIX)) {
                 continue;
             }
 
@@ -101,9 +104,13 @@ class McpChatLab
         $messages->add(Message::forSystem(<<<PROMPT
 You are a CMS assistant used to test MCP tools.
 Current admin locale: {$locale}
-Answer questions about the existing CMS content, sites, menus and internal links.
+Answer questions about the existing CMS configuration, content, sites, layouts, modules, blocks, menus, internal links and site analytics.
 Use the available read-only MCP tools when the answer needs CMS data.
+Registered CMS tool names use the "sfs_cms_" prefix and are grouped by domain, for example "sfs_cms_sites_get_context", "sfs_cms_sites_list", "sfs_cms_routes_find_internal_links" and "sfs_cms_analytics_query_pages". Use those exact tool names and never call old "cms_" or legacy ungrouped tool names.
 Do not invent CMS data. If the tools return an error or no data, say so clearly.
+When the user asks for site traffic, visits, pageviews, bounce rate, time on page or aggregate statistics, use the CMS site analytics metrics tool.
+When the user asks for page metrics, most or least read articles, top visited pages, popular content, content rankings or path patterns, use the CMS analytics page query tool.
+When the user asks what the CMS project can do or how it is configured, use the CMS configuration context tool.
 When the user asks for an admin/edit/details/preview link for content, use the current admin locale "{$locale}" as the locale argument when calling CMS content tools.
 Return only one Markdown clickable link for that locale. Use adminUrls.content for edit/admin edition links, adminUrls.details for details, and adminUrls.preview for preview.
 Do not list links for every available content locale. Do not invent admin routes or transform public URLs manually.
@@ -189,7 +196,7 @@ PROMPT));
         $tools = [];
 
         foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, 'sfs_cms_')) {
+            if (!str_starts_with($tool->name, self::CMS_TOOL_PREFIX)) {
                 continue;
             }
 
@@ -213,18 +220,19 @@ PROMPT));
 
     protected function executeToolCall(ToolCall $toolCall): array
     {
-        $reference = $this->registry->getTool($toolCall->getName());
+        $toolName = $this->normalizeToolName($toolCall->getName());
         $handler = new ReferenceHandler($this->mcpToolServices);
         $arguments = $toolCall->getArguments();
         $arguments['_session'] = new Session(new InMemorySessionStore());
 
         try {
+            $reference = $this->registry->getTool($toolName);
             $result = $handler->handle($reference, $arguments);
             $content = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 
             return [
                 'id' => $toolCall->getId(),
-                'name' => $toolCall->getName(),
+                'name' => $toolName,
                 'arguments' => $toolCall->getArguments(),
                 'content' => $content,
                 'error' => null,
@@ -237,7 +245,7 @@ PROMPT));
 
             return [
                 'id' => $toolCall->getId(),
-                'name' => $toolCall->getName(),
+                'name' => $toolName,
                 'arguments' => $toolCall->getArguments(),
                 'content' => $content,
                 'error' => $e->getMessage(),
@@ -250,9 +258,44 @@ PROMPT));
         return match (true) {
             $result instanceof TextResult => $result->getContent(),
             $result instanceof ObjectResult => json_encode($result->getContent(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '',
+            $result instanceof ThinkingResult => '',
+            $result instanceof MultiPartResult => implode('', array_map(
+                fn (ResultInterface $part): string => $part instanceof ToolCallResult ? '' : $this->resultToText($part),
+                $result->getContent(),
+            )),
             $result instanceof ToolCallResult => 'The model could not produce a final answer after using the available MCP tools.',
             default => sprintf('Unsupported AI result type "%s".', $result::class),
         };
+    }
+
+    protected function normalizeToolName(string $toolName): string
+    {
+        if (str_starts_with($toolName, 'cms_')) {
+            $toolName = 'sfs_'.$toolName;
+        }
+
+        return $this->legacyToolNameMap()[$toolName] ?? $toolName;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function legacyToolNameMap(): array
+    {
+        return [
+            'sfs_cms_get_site_context' => 'sfs_cms_sites_get_context',
+            'sfs_cms_get_configuration_context' => 'sfs_cms_configuration_get_context',
+            'sfs_cms_get_site_analytics' => 'sfs_cms_analytics_get_site_metrics',
+            'sfs_cms_get_top_content' => 'sfs_cms_analytics_query_pages',
+            'sfs_cms_search_published_content' => 'sfs_cms_contents_search_published',
+            'sfs_cms_get_published_content' => 'sfs_cms_contents_get_published',
+            'sfs_cms_find_internal_links' => 'sfs_cms_routes_find_internal_links',
+            'sfs_cms_get_menu_context' => 'sfs_cms_menus_get_context',
+            'sfs_cms_media_list_image_types' => 'sfs_cms_media_images_list_types',
+            'sfs_cms_media_search_images' => 'sfs_cms_media_images_search',
+            'sfs_cms_media_get_image_context' => 'sfs_cms_media_images_get_context',
+            'sfs_cms_analytics_get_top_content' => 'sfs_cms_analytics_query_pages',
+        ];
     }
 
     protected function extractTokenUsage(?ResultInterface $result): ?array

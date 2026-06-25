@@ -37,9 +37,10 @@ class ContentEditorAgent
 
     private const MAX_TOOL_ROUNDS = 5;
     private const MAX_HISTORY_MESSAGES = 20;
+    private const CMS_TOOL_PREFIX = 'sfs_cms_';
 
     public function __construct(
-        private readonly AiContentLab $contentLab,
+        private readonly ContentVersionPayloadContext $payloadContext,
         private readonly RegistryInterface $registry,
         private readonly ServiceLocator $platforms,
         private readonly ServiceLocator $mcpToolServices,
@@ -83,7 +84,7 @@ class ContentEditorAgent
         $tools = [];
 
         foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, 'sfs_cms_')) {
+            if (!str_starts_with($tool->name, self::CMS_TOOL_PREFIX)) {
                 continue;
             }
 
@@ -139,7 +140,7 @@ class ContentEditorAgent
         $contentType = (string) ($context['contentType'] ?? '');
         $layout = (string) ($context['layout'] ?? '');
         $currentPayload = $this->normalizeVersionPayload($context['currentPayload'] ?? [], $layout);
-        $schema = $this->contentLab->getSchema($contentType, $layout);
+        $schema = $this->payloadContext->getSchema($contentType, $layout);
         $siteContext = $this->getSelectedSiteContext($context['selectedSite'] ?? null);
 
         $platform = $this->getPlatform($platformName);
@@ -239,7 +240,7 @@ PROMPT));
             throw new RuntimeException('The content editor agent returned an invalid payload.');
         }
 
-        $patchPayload = $this->contentLab->normalizePayload($patchPayload);
+        $patchPayload = $this->payloadContext->normalizePayload($patchPayload);
         unset($patchPayload['_token'], $patchPayload['_ok'], $patchPayload['goto'], $patchPayload['module_prototypes_collection']);
         $patchPayload['layout'] = $layout;
 
@@ -253,7 +254,7 @@ PROMPT));
         ];
 
         try {
-            $validation = $this->contentLab->validatePayload($contentType, $layout, $mergedPayload);
+            $validation = $this->payloadContext->validatePayload($contentType, $layout, $mergedPayload);
             unset($validation['form']);
         } catch (Throwable $e) {
             $validation = [
@@ -336,7 +337,7 @@ PROMPT));
         $tools = [];
 
         foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, 'sfs_cms_')) {
+            if (!str_starts_with($tool->name, self::CMS_TOOL_PREFIX)) {
                 continue;
             }
 
@@ -402,6 +403,7 @@ Scope:
 
 Capabilities and limits:
 - You may use the read-only CMS MCP tools to inspect published content, site context, menus, internal links, and existing media context.
+- Registered CMS tool names use the "sfs_cms_" prefix. Use those exact tool names and never call old "cms_" tool names.
 - You cannot save, publish, delete, create CMS versions, change configuration, run commands, or modify anything outside the browser draft form.
 - The browser applies your returned payload to the open draft form only. A CMS version is saved only when the editor manually clicks the normal Save button.
 
@@ -432,18 +434,19 @@ PROMPT;
 
     private function executeToolCall(ToolCall $toolCall): array
     {
-        $reference = $this->registry->getTool($toolCall->getName());
+        $toolName = $this->normalizeToolName($toolCall->getName());
         $handler = new ReferenceHandler($this->mcpToolServices);
         $arguments = $toolCall->getArguments();
         $arguments['_session'] = new Session(new InMemorySessionStore());
 
         try {
+            $reference = $this->registry->getTool($toolName);
             $result = $handler->handle($reference, $arguments);
             $content = $this->encodeJson($result);
 
             return [
                 'id' => $toolCall->getId(),
-                'name' => $toolCall->getName(),
+                'name' => $toolName,
                 'arguments' => $toolCall->getArguments(),
                 'content' => $content,
                 'error' => null,
@@ -456,7 +459,7 @@ PROMPT;
 
             return [
                 'id' => $toolCall->getId(),
-                'name' => $toolCall->getName(),
+                'name' => $toolName,
                 'arguments' => $toolCall->getArguments(),
                 'content' => $content,
                 'error' => $e->getMessage(),
@@ -509,7 +512,7 @@ PROMPT;
         }
 
         try {
-            $reference = $this->registry->getTool('sfs_cms_get_site_context');
+            $reference = $this->registry->getTool('sfs_cms_sites_get_context');
             $handler = new ReferenceHandler($this->mcpToolServices);
 
             $result = $handler->handle($reference, [
@@ -524,6 +527,36 @@ PROMPT;
                 'type' => $e::class,
             ];
         }
+    }
+
+    private function normalizeToolName(string $toolName): string
+    {
+        if (str_starts_with($toolName, 'cms_')) {
+            $toolName = 'sfs_'.$toolName;
+        }
+
+        return $this->legacyToolNameMap()[$toolName] ?? $toolName;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function legacyToolNameMap(): array
+    {
+        return [
+            'sfs_cms_get_site_context' => 'sfs_cms_sites_get_context',
+            'sfs_cms_get_configuration_context' => 'sfs_cms_configuration_get_context',
+            'sfs_cms_get_site_analytics' => 'sfs_cms_analytics_get_site_metrics',
+            'sfs_cms_get_top_content' => 'sfs_cms_analytics_query_pages',
+            'sfs_cms_search_published_content' => 'sfs_cms_contents_search_published',
+            'sfs_cms_get_published_content' => 'sfs_cms_contents_get_published',
+            'sfs_cms_find_internal_links' => 'sfs_cms_routes_find_internal_links',
+            'sfs_cms_get_menu_context' => 'sfs_cms_menus_get_context',
+            'sfs_cms_media_list_image_types' => 'sfs_cms_media_images_list_types',
+            'sfs_cms_media_search_images' => 'sfs_cms_media_images_search',
+            'sfs_cms_media_get_image_context' => 'sfs_cms_media_images_get_context',
+            'sfs_cms_analytics_get_top_content' => 'sfs_cms_analytics_query_pages',
+        ];
     }
 
     private function resetTraceablePlatform(PlatformInterface $platform): void
@@ -655,7 +688,7 @@ PROMPT;
             return <<<PROMPT
 Selected site: {$selectedSite}
 {$siteContextStatus}
-Use selectedSiteContext.aiInstructions as editorial constraints when it is available.
+Use selectedSiteContext.metadata.sfs_cms_ai as editorial constraints when it is available.
 Apply the site description, target audience, editorial tone, brand voice, content guidelines, SEO guidelines, keywords, forbidden topics, and extra instructions when changing copy, headings, metadata, CTAs, or module content.
 If the site AI instructions conflict with the user request, preserve the user intent but adapt wording to the site configuration.
 Do not refuse the edit just because site context is missing; produce the best valid content payload for the current form schema.
@@ -666,7 +699,7 @@ PROMPT;
         }
 
         return <<<PROMPT
-If the current edit context includes selectedSiteContext.aiInstructions, apply them as editorial constraints: tone, brand voice, keywords, SEO guidance, content guidelines, forbidden topics, and extra instructions.
+If the current edit context includes selectedSiteContext.metadata.sfs_cms_ai, apply it as editorial constraints: tone, brand voice, keywords, SEO guidance, content guidelines, forbidden topics, and extra instructions.
 Do not refuse the edit just because site context is missing; produce the best valid content payload for the current form schema.
 
 Editor request:

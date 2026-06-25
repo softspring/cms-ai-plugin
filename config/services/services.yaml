@@ -38,7 +38,7 @@ services:
     Softspring\CmsAiPlugin\Form\Extension\MediaAiImageCreateTypeExtension:
         arguments:
             $mediaTypesCollection: '@Softspring\MediaBundle\Type\MediaTypesCollection'
-            $requirementsDescriber: '@Softspring\CmsMcpPlugin\Media\MediaImageRequirementsDescriber'
+            $generationRequirements: '@Softspring\CmsAiPlugin\Media\MediaImageGenerationRequirements'
             $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
             $urlGenerator: '@router'
             $requestStack: '@request_stack'
@@ -48,7 +48,7 @@ services:
     Softspring\CmsAiPlugin\Media\AiImageGenerator:
         arguments:
             $httpClient: '@http_client'
-            $requirementsDescriber: '@Softspring\CmsMcpPlugin\Media\MediaImageRequirementsDescriber'
+            $generationRequirements: '@Softspring\CmsAiPlugin\Media\MediaImageGenerationRequirements'
             $openAiApiKey: '%env(OPENAI_API_KEY)%'
 
     Softspring\CmsAiPlugin\Media\AiImageDescriber:
@@ -65,11 +65,8 @@ services:
         class: Softspring\CmsAiPlugin\Controller\Admin\SiteAiController
         public: true
 
-    Softspring\CmsAiPlugin\Lab\AiContentLab:
+    Softspring\CmsAiPlugin\Lab\ContentVersionPayloadContext:
         arguments:
-            $contentManager: '@Softspring\CmsBundle\Manager\ContentManagerInterface'
-            $routeManager: '@Softspring\CmsBundle\Manager\RouteManagerInterface'
-            $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
             $contentVersionClass: '%sfs_cms.content.content_version_class%'
             $enabledLocales: '%kernel.enabled_locales%'
             $defaultLocale: '%kernel.default_locale%'

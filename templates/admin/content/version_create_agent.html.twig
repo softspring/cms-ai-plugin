@@ -155,6 +155,25 @@
 
                     <div class="alert alert-danger d-none" data-cms-ai-content-editor-error></div>
                     <div class="alert alert-warning d-none" data-cms-ai-content-editor-validation></div>
+                    <details class="sfs-cms-ai-content-agent-debug d-none" data-cms-ai-content-editor-debug>
+                        <summary>Payload JSON</summary>
+                        <div class="sfs-cms-ai-content-agent-debug-section">
+                            <div class="sfs-cms-ai-content-agent-debug-title">Patch payload</div>
+                            <pre data-cms-ai-content-editor-debug-payload></pre>
+                        </div>
+                        <div class="sfs-cms-ai-content-agent-debug-section">
+                            <div class="sfs-cms-ai-content-agent-debug-title">Merged payload</div>
+                            <pre data-cms-ai-content-editor-debug-merged-payload></pre>
+                        </div>
+                        <div class="sfs-cms-ai-content-agent-debug-section">
+                            <div class="sfs-cms-ai-content-agent-debug-title">Tool calls</div>
+                            <pre data-cms-ai-content-editor-debug-tool-calls></pre>
+                        </div>
+                        <div class="sfs-cms-ai-content-agent-debug-section">
+                            <div class="sfs-cms-ai-content-agent-debug-title">Raw response</div>
+                            <pre data-cms-ai-content-editor-debug-raw-response></pre>
+                        </div>
+                    </details>
 
                     <div class="sfs-cms-ai-content-agent-form">
                         <textarea class="form-control" rows="4" placeholder="Instruction..." data-cms-ai-content-editor-instruction></textarea>

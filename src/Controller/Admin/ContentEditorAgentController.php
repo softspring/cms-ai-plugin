@@ -6,7 +6,7 @@ namespace Softspring\CmsAiPlugin\Controller\Admin;
 
 use InvalidArgumentException;
 use Softspring\CmsAiPlugin\Lab\ContentEditorAgent;
-use Softspring\CmsAiPlugin\Lab\AiContentLab;
+use Softspring\CmsAiPlugin\Lab\ContentVersionPayloadContext;
 use Softspring\CmsBundle\Manager\ContentManagerInterface;
 use Softspring\CmsBundle\Model\ContentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,12 +26,12 @@ class ContentEditorAgentController extends AbstractController
         string $content,
         Request $request,
         ContentEditorAgent $agent,
-        AiContentLab $contentLab,
+        ContentVersionPayloadContext $payloadContext,
         ContentManagerInterface $contentManager,
     ): JsonResponse {
         try {
             $payload = $this->getRequestPayload($request);
-            $contentConfig = $contentLab->getContentConfig($contentType);
+            $contentConfig = $payloadContext->getContentConfig($contentType);
             $contentEntity = $contentManager->getRepository($contentType)->find($content);
 
             if (!$contentEntity instanceof ContentInterface) {
@@ -110,6 +110,7 @@ class ContentEditorAgentController extends AbstractController
                 'replaceCollections' => $result['replaceCollections'],
                 'isValid' => $result['isValid'],
                 'errors' => $result['errors'],
+                'rawResponse' => $result['rawResponse'],
                 'toolCalls' => $result['toolCalls'],
                 'history' => $agent->normalizeHistory($history),
             ]);
