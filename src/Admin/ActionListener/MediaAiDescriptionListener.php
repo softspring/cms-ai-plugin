@@ -11,6 +11,7 @@ use Softspring\MediaBundle\Model\MediaInterface;
 use Softspring\MediaBundle\Model\MediaVersionInterface;
 use Softspring\MediaBundle\SfsMediaEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\File;
 use Throwable;
 
@@ -110,7 +111,7 @@ class MediaAiDescriptionListener implements EventSubscriberInterface
     protected function getGeneratedPrompt(ApplyEvent $event): ?string
     {
         $form = $event->getForm();
-        if (!$form || !$form->has(self::GENERATED_PROMPT_FIELD)) {
+        if (!$form instanceof FormInterface || !$form->has(self::GENERATED_PROMPT_FIELD)) {
             return null;
         }
 
@@ -129,12 +130,12 @@ class MediaAiDescriptionListener implements EventSubscriberInterface
     protected function findUploadedOriginalVersion(MediaInterface $media): ?MediaVersionInterface
     {
         $original = $media->getVersion('_original');
-        if ($original instanceof MediaVersionInterface && $original->getUpload() instanceof File) {
+        if ($original->getUpload() instanceof File) {
             return $original;
         }
 
         foreach ($media->getVersions() as $version) {
-            if ($version instanceof MediaVersionInterface && $version->getUpload() instanceof File) {
+            if ($version->getUpload() instanceof File) {
                 return $version;
             }
         }

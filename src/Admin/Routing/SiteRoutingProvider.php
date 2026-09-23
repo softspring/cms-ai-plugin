@@ -7,6 +7,7 @@ namespace Softspring\CmsAiPlugin\Admin\Routing;
 use Softspring\CmsBundle\Routing\Provider\RoutingProviderInterface;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
+
 use function in_array;
 
 class SiteRoutingProvider implements RoutingProviderInterface

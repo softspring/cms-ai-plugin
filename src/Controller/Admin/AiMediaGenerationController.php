@@ -16,6 +16,7 @@ use Softspring\MediaBundle\Type\MediaTypesCollection;
 use Softspring\TranslatableBundle\Model\Translation;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
+use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\File;
@@ -61,11 +62,15 @@ class AiMediaGenerationController extends AbstractController
         if ($form->isSubmitted()) {
             $data = $form->getData();
 
-            if ($form->get('refresh')->isClicked()) {
+            $refreshButton = $form->get('refresh');
+            $previewButton = $form->get('preview');
+            $createButton = $form->get('create');
+
+            if ($refreshButton instanceof ClickableInterface && $refreshButton->isClicked()) {
                 return $this->renderGenerationForm($form, $data, $this->getPreview($session->get(self::SESSION_KEY, []), $data));
             }
 
-            if ($form->isValid() && $form->get('preview')->isClicked()) {
+            if ($form->isValid() && $previewButton instanceof ClickableInterface && $previewButton->isClicked()) {
                 try {
                     $preview = $this->generatePreview($data);
                     $session->set(self::SESSION_KEY, $preview);
@@ -73,7 +78,7 @@ class AiMediaGenerationController extends AbstractController
                     $this->addGenerationError($form, $exception, $data);
                     $preview = $this->getPreview($session->get(self::SESSION_KEY, []), $data);
                 }
-            } elseif ($form->isValid() && $form->get('create')->isClicked()) {
+            } elseif ($form->isValid() && $createButton instanceof ClickableInterface && $createButton->isClicked()) {
                 try {
                     $preview = $this->getPreview($session->get(self::SESSION_KEY, []), $data);
                     if (!$preview) {

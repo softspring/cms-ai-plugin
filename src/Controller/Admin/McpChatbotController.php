@@ -102,7 +102,7 @@ class McpChatbotController extends AbstractController
         }
 
         if ($this->wantsJson($request)) {
-            if ($exception) {
+            if ($exception instanceof Throwable) {
                 return new JsonResponse([
                     'ok' => false,
                     'error' => $exception->getMessage(),
@@ -216,7 +216,7 @@ class McpChatbotController extends AbstractController
                 $tokens[$key] = max(0, (int) $value);
             }
 
-            if ($tokens) {
+            if ([] !== $tokens) {
                 $normalized['tokens'] = $tokens;
             }
         }

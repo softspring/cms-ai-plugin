@@ -23,6 +23,7 @@ use Symfony\AI\Platform\StructuredOutput\PlatformSubscriber;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Contracts\Service\ResetInterface;
 use Throwable;
+
 use function count;
 use function in_array;
 use function is_array;
@@ -83,14 +84,14 @@ class AiKeywordCoverageCheck implements CheckInterface
         return new SeoCheck($this->getCode(), $severity, $score, [
             'keywords' => count($keywords),
             'matched' => (int) ($result['matchedKeywords'] ?? 0),
-            'platform' => $platformName ?? '',
-            'model' => $model ?? '',
+            'platform' => $platformName,
+            'model' => $model,
         ], [
             'keywords' => $keywords,
             'matched_keywords' => (string) ($result['matchedKeywords'] ?? 0),
             'ai_summary' => $this->stringValue($result['summary'] ?? ''),
             'ai_recommendations' => $this->stringList($result['recommendations'] ?? []),
-            'ai_platform' => ($platformName ?? '').' / '.($model ?? ''),
+            'ai_platform' => $platformName.' / '.$model,
         ]);
     }
 

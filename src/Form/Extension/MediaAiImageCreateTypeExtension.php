@@ -48,7 +48,7 @@ class MediaAiImageCreateTypeExtension extends AbstractTypeExtension
         }
 
         $modelsByPlatform = $this->getImageModelsByPlatform();
-        $platforms = array_combine(array_keys($modelsByPlatform), array_keys($modelsByPlatform)) ?: [];
+        $platforms = array_combine(array_keys($modelsByPlatform), array_keys($modelsByPlatform));
         $selectedPlatform = array_key_first($platforms) ?: 'openai';
         $models = $modelsByPlatform[$selectedPlatform] ?? ['gpt-image-1' => 'gpt-image-1'];
 
@@ -149,7 +149,7 @@ class MediaAiImageCreateTypeExtension extends AbstractTypeExtension
         $models = [];
         foreach ($platform->getModelCatalog()->getModels() as $model => $definition) {
             foreach ($definition['capabilities'] as $capability) {
-                if ($capability instanceof Capability && Capability::OUTPUT_IMAGE === $capability) {
+                if (Capability::OUTPUT_IMAGE === $capability) {
                     $models[$model] = $model;
                     break;
                 }

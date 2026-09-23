@@ -27,7 +27,7 @@ class AiMediaGenerateForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $modelsByPlatform = $this->imageModelChoices->getModelsByPlatform();
-        $platforms = array_combine(array_keys($modelsByPlatform), array_keys($modelsByPlatform)) ?: [];
+        $platforms = array_combine(array_keys($modelsByPlatform), array_keys($modelsByPlatform));
         $selectedPlatform = $options['selected_platform'] ?: (array_key_first($platforms) ?: 'openai');
         if (!isset($modelsByPlatform[$selectedPlatform])) {
             $selectedPlatform = array_key_first($platforms) ?: 'openai';
