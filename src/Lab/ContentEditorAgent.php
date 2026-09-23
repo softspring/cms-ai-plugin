@@ -232,7 +232,7 @@ PROMPT));
                 ])->getResult();
             }
 
-            $rawResponse = $result ? $this->resultToText($result) : '';
+            $rawResponse = $this->resultToText($result);
         } finally {
             $this->resetTraceablePlatform($platform);
         }
@@ -348,15 +348,18 @@ PROMPT));
             $reference = $this->registry->getTool($tool->name);
             $handler = $reference->handler;
 
-            if (!is_array($handler) || !is_string($handler[0]) || !is_string($handler[1])) {
+            if (!is_array($handler)) {
                 continue;
             }
+
+            $parameters = $tool->inputSchema;
+            $parameters['additionalProperties'] = false;
 
             $tools[$tool->name] = new PlatformTool(
                 new ExecutionReference($handler[0], $handler[1]),
                 $tool->name,
                 $tool->description ?? 'CMS MCP tool',
-                $tool->inputSchema,
+                $parameters,
             );
         }
 

@@ -60,8 +60,8 @@ class AiImageModelChoices
 
         $models = [];
         foreach ($platform->getModelCatalog()->getModels() as $model => $definition) {
-            foreach ($definition['capabilities'] ?? [] as $capability) {
-                if ($capability instanceof Capability && Capability::OUTPUT_IMAGE === $capability) {
+            foreach ($definition['capabilities'] as $capability) {
+                if (Capability::OUTPUT_IMAGE === $capability) {
                     $models[$model] = $model;
                     break;
                 }

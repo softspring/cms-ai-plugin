@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Softspring\CmsAiPlugin\Media;
 
 use RuntimeException;
-use Symfony\Component\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class AiImageGenerator

@@ -175,7 +175,7 @@ PROMPT));
                 }
             }
 
-            if ($result && [] !== $this->extractToolCalls($result)) {
+            if ([] !== $this->extractToolCalls($result)) {
                 $messages->add(Message::ofUser(<<<PROMPT
 Stop calling tools now. Use only the tool results already provided in this conversation.
 Write the best final answer you can. If the available data is incomplete, say exactly what is missing and still provide the most useful editorial recommendation possible.
@@ -185,7 +185,7 @@ PROMPT));
                 $tokenUsage = $this->mergeTokenUsage($tokenUsage, $this->extractTokenUsage($result));
             }
 
-            $answer = $result ? $this->resultToText($result) : $answer;
+            $answer = $this->resultToText($result);
         } finally {
             $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
             $this->resetTraceablePlatform($platform);
@@ -214,15 +214,18 @@ PROMPT));
             $reference = $this->registry->getTool($tool->name);
             $handler = $reference->handler;
 
-            if (!is_array($handler) || !is_string($handler[0]) || !is_string($handler[1])) {
+            if (!is_array($handler)) {
                 continue;
             }
+
+            $parameters = $tool->inputSchema;
+            $parameters['additionalProperties'] = false;
 
             $tools[$tool->name] = new PlatformTool(
                 new ExecutionReference($handler[0], $handler[1]),
                 $tool->name,
                 $tool->description ?? 'CMS MCP tool',
-                $tool->inputSchema,
+                $parameters,
             );
         }
 
@@ -334,7 +337,7 @@ PROMPT));
 
     protected function extractTokenUsage(?ResultInterface $result): ?array
     {
-        if (!$result) {
+        if (!$result instanceof ResultInterface) {
             return null;
         }
 

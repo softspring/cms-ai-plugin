@@ -10,6 +10,9 @@
         "@softspring/cms-bundle": "file:./../vendor/softspring/cms-bundle",
         "@softspring/media-bundle": "file:./../vendor/softspring/media-bundle"
     },
+    "scripts": {
+        "build": "node assets/build-dist.mjs"
+    },
     "symfony": {
         "importmap": {
             "@softspring/cms-ai-plugin/scripts/admin/content-editor-agent.js": {
