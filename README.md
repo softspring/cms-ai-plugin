@@ -12,6 +12,10 @@
 
 This plugin is still in active development. The UI, prompts, generated payload format, and integration points may change before the first stable release.
 
+## Documentation
+
+[Armonic documentation](https://armonic.softspring.es/6.0/bundles/cms-ai-plugin)
+
 ## What It Provides
 
 - An admin Armonic AI chatbot screen.
