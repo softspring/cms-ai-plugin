@@ -2,11 +2,11 @@
 
 [![Latest Stable](https://img.shields.io/packagist/v/softspring/cms-ai-plugin?label=stable&style=flat-square)](https://github.com/softspring/cms-ai-plugin/releases)
 [![Latest Unstable](https://img.shields.io/packagist/v/softspring/cms-ai-plugin?label=unstable&style=flat-square&include_prereleases)](https://github.com/softspring/cms-ai-plugin/releases)
-[![License](https://img.shields.io/packagist/l/softspring/cms-ai-plugin?style=flat-square)](https://github.com/softspring/cms-ai-plugin/blob/6.0/LICENSE)
-[![PHP Version](https://img.shields.io/packagist/dependency-v/softspring/cms-ai-plugin/php?style=flat-square)](https://github.com/softspring/cms-ai-plugin/blob/6.0/composer.json)
+[![License](https://img.shields.io/packagist/l/softspring/cms-ai-plugin?style=flat-square)](https://github.com/softspring/cms-ai-plugin/blob/6.1/LICENSE)
+[![PHP Version](https://img.shields.io/packagist/dependency-v/softspring/cms-ai-plugin/php?style=flat-square)](https://github.com/softspring/cms-ai-plugin/blob/6.1/composer.json)
 [![Downloads](https://img.shields.io/packagist/dt/softspring/cms-ai-plugin?style=flat-square)](https://packagist.org/packages/softspring/cms-ai-plugin)
-[![CI](https://img.shields.io/github/actions/workflow/status/softspring/cms-ai-plugin/ci.yml?branch=6.0&style=flat-square&label=CI)](https://github.com/softspring/cms-ai-plugin/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/codecov/c/github/softspring/cms-ai-plugin?branch=6.0&style=flat-square)](https://app.codecov.io/gh/softspring/cms-ai-plugin/tree/6.0)
+[![CI](https://img.shields.io/github/actions/workflow/status/softspring/cms-ai-plugin/ci.yml?branch=6.1&style=flat-square&label=CI)](https://github.com/softspring/cms-ai-plugin/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/softspring/cms-ai-plugin?branch=6.1&style=flat-square)](https://app.codecov.io/gh/softspring/cms-ai-plugin/tree/6.1)
 
 `softspring/cms-ai-plugin` adds AI-assisted admin workflows to Armonic CMS.
 
@@ -14,7 +14,7 @@ This plugin is still in active development. The UI, prompts, generated payload f
 
 ## Documentation
 
-Armonic usage documentation for this experimental package is planned for `6.1@dev`.
+Read the [experimental cms-ai-plugin guide](https://armonic.softspring.es/6.1@dev/docs/bundles/cms-ai-plugin).
 
 ## What It Provides
 
@@ -29,7 +29,7 @@ Armonic usage documentation for this experimental package is planned for `6.1@de
 ## Installation
 
 ```bash
-composer require softspring/cms-ai-plugin:^6.0@dev
+composer require softspring/cms-ai-plugin:6.1.*@dev
 ```
 
 The plugin requires `softspring/cms-bundle`, `softspring/cms-mcp-plugin`, `softspring/form-schema`, and `symfony/ai-bundle`.
