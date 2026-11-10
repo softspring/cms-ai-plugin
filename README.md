@@ -14,7 +14,7 @@ This plugin is still in active development. The UI, prompts, generated payload f
 
 ## Documentation
 
-Read the [experimental cms-ai-plugin guide](https://armonic.softspring.es/6.1@dev/bundles/cms-ai-plugin).
+Read the [experimental cms-ai-plugin guide](https://armonic.softspring.es/6.1-dev/bundles/cms-ai-plugin).
 
 ## What It Provides
 
