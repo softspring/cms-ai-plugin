@@ -21,6 +21,7 @@ class SfsCmsAiExtension extends Extension implements PrependExtensionInterface
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $container->setParameter('sfs_cms_ai.assistant_models', $config['assistant_models']);
         $container->setParameter('sfs_cms_ai.http_client.timeout', $config['http_client']['timeout']);
         $container->setParameter('sfs_cms_ai.http_client.max_duration', $config['http_client']['max_duration']);
         $container->setParameter('sfs_cms_ai.content_editor.max_execution_time', $config['content_editor']['max_execution_time']);

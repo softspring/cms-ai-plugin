@@ -4,9 +4,9 @@
     "license": "AGPL-3.0-or-later",
     "type": "sfs-cms-plugin",
     "require": {
+        "php": ">=8.4",
         "doctrine/collections": "^1.8 || ^2.0",
         "doctrine/orm": "^2.10 || ^3.0 || ^4.0",
-        "php": ">=8.4",
         "softspring/cms-api-plugin": "6.1.*@dev",
         "softspring/cms-bundle": "6.1.*@dev",
         "softspring/form-schema": "6.1.*@dev",

@@ -31,6 +31,7 @@ class McpChatLab
         protected ToolProviderInterface $toolProvider,
         protected ServiceLocator $platforms,
         protected RequestStack $requestStack,
+        protected ChatModelChoices $modelChoices,
     ) {
     }
 
@@ -48,11 +49,8 @@ class McpChatLab
         }
 
         $platform = $this->getPlatform($platformName);
-        $models = array_keys($platform->getModelCatalog()->getModels());
 
-        sort($models);
-
-        return array_combine($models, $models);
+        return $this->modelChoices->forPlatform($platform, $platformName, false);
     }
 
     public function getModelsByPlatform(): array
@@ -75,6 +73,10 @@ class McpChatLab
     {
         if (!$model) {
             throw new RuntimeException('A model is required to test the MCP chatbot.');
+        }
+
+        if (!isset($this->getModels($platformName)[$model])) {
+            throw new RuntimeException('The selected model does not support this assistant. Choose a conversational model with tool support.');
         }
 
         $locale = $this->requestStack->getCurrentRequest()?->attributes->get('_locale')
