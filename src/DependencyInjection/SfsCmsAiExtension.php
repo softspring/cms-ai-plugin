@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Softspring\CmsAiPlugin\DependencyInjection;
 
+use Softspring\CmsAiPlugin\Instructions\AiInstructions;
 use Symfony\Component\AssetMapper\AssetMapperInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -44,6 +45,20 @@ class SfsCmsAiExtension extends Extension implements PrependExtensionInterface
     public function prepend(ContainerBuilder $container): void
     {
         $this->prependAiHttpClient($container);
+        if ($container->hasExtension('sfs_config')) {
+            $container->prependExtensionConfig('sfs_config', [
+                'defaults' => ['cms_ai.instructions' => ''],
+                'groups' => ['cms' => [
+                    'label' => 'groups.cms.label', 'description' => 'groups.cms.description',
+                    'translation_domain' => 'sfs_config', 'priority' => 100,
+                ]],
+                'definitions' => ['cms_ai.instructions' => [
+                    'type' => 'text', 'label' => 'cms_ai.instructions.label',
+                    'group' => 'cms', 'help' => 'cms_ai.instructions.help',
+                    'permissions' => ['update' => AiInstructions::MANAGE_PERMISSION, 'delete' => AiInstructions::MANAGE_PERMISSION],
+                ]],
+            ]);
+        }
 
         if (interface_exists(AssetMapperInterface::class)) {
             $container->prependExtensionConfig('framework', [

@@ -2,6 +2,9 @@
 
 {% extends '@SfsCms/admin_layout.html.twig' %}
 
+{% trans_default_domain 'sfs_cms_ai' %}
+{% import '@SfsCmsAiPlugin/admin/_ui_translations.html.twig' as ai_ui %}
+
 {% form_theme form '@SfsCms/forms/cms_theme.html.twig' %}
 
 {% block title %}Armonic AI{% endblock %}
@@ -21,12 +24,12 @@
         <div class="d-flex flex-shrink-0 align-items-start justify-content-between gap-3 mb-4">
             <div>
                 <h1 class="h3 mb-1">Armonic AI</h1>
-                <p class="text-muted mb-0">Ask the assistant to inspect published CMS context through the registered MCP tools.</p>
+                <p class="text-muted mb-0">{{ 'chat.description'|trans }}</p>
             </div>
 
             <a href="{{ path('sfs_cms_ai_admin_mcp_chatbot', {_locale: app.request.locale, new: 1}) }}" class="btn btn-outline-secondary flex-shrink-0">
                 <span class="bi bi-trash me-1" aria-hidden="true"></span>
-                New chat
+                {{ 'chat.new'|trans }}
             </a>
         </div>
 
@@ -35,8 +38,9 @@
                 <div
                     class="bg-white p-3 sfs-cms-ai-chatbot d-flex flex-column flex-grow-1 min-vh-0"
                     data-mcp-chatbot
-                    data-thinking-label="Thinking..."
-                    data-error-prefix="Chatbot failed:"
+                    {{ ai_ui.attributes() }}
+                    data-thinking-label="{{ 'ui.thinking'|trans }}"
+                    data-error-prefix="{{ 'ui.error_prefix'|trans }}"
                 >
                     <div class="sfs-cms-ai-chatbot-thread" data-mcp-chatbot-thread aria-live="polite">
                         {% if history is not empty %}
@@ -63,7 +67,7 @@
                         {% else %}
                             <div class="sfs-cms-ai-message sfs-cms-ai-message-assistant">
                                 <div class="sfs-cms-ai-message-content">
-                                    <div class="sfs-cms-ai-message-body sfs-cms-ai-markdown">Ask a question to test the CMS MCP tools with the selected model.</div>
+                                    <div class="sfs-cms-ai-message-body sfs-cms-ai-markdown">{{ 'chat.empty'|trans }}</div>
                                 </div>
                             </div>
                         {% endif %}
@@ -71,7 +75,7 @@
 
                     <div class="sfs-cms-ai-chatbot-status flex-shrink-0 text-muted small mt-3 d-none" data-mcp-chatbot-status>
                         <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                        <span data-mcp-chatbot-status-text>Thinking...</span>
+                        <span data-mcp-chatbot-status-text>{{ 'ui.thinking'|trans }}</span>
                     </div>
 
                     <div class="alert alert-danger flex-shrink-0 mt-3 d-none" data-mcp-chatbot-error></div>
@@ -91,7 +95,7 @@
                             },
                             attr: {
                                 rows: 3,
-                                placeholder: 'Ask about published content, links, menus, or site context...',
+                                placeholder: 'chat.question.placeholder'|trans,
                                 'data-mcp-chatbot-input': ''
                             }
                         }) }}
@@ -117,13 +121,13 @@
 
                             <button type="submit" class="btn btn-primary sfs-cms-ai-chatbot-submit" data-mcp-chatbot-submit>
                                 <span class="bi bi-send me-1" aria-hidden="true"></span>
-                                Send
+                                {{ 'chat.send'|trans }}
                             </button>
                         </div>
 
                         {% if exception %}
                             <div class="alert alert-danger mt-3 mb-0">
-                                <strong>Chatbot failed:</strong> {{ exception.message }}
+                                <strong>{{ 'ui.error_prefix'|trans }}</strong> {{ exception.message }}
                             </div>
                         {% endif %}
                     {{ form_end(form) }}
@@ -132,26 +136,27 @@
 
             <div class="col-xl-4 d-flex flex-column min-vh-0 gap-4 sfs-cms-ai-chatbot-sidebar">
                 <div class="bg-white p-3 flex-shrink-0 sfs-cms-ai-chatbot-tools">
-                    <h2 class="h5 mb-3">Available MCP Tools</h2>
+                    <h2 class="h5 mb-3">{{ 'chat.tools.available'|trans }}</h2>
 
                     {% if tools %}
                         <ul class="mb-0">
                             {% for tool in tools %}
                                 <li class="mb-2">
                                     <code>{{ tool.name }}</code>
-                                    {% if tool.description %}
-                                        <br><span class="small text-muted">{{ tool.description }}</span>
-                                    {% endif %}
+                                    {% set description_key = 'tools.' ~ tool.name ~ '.description' %}
+                                    {% set translated_description = description_key|trans %}
+                                    {% set description = translated_description != description_key ? translated_description : tool.description %}
+                                    {% if description %}<br><span class="small text-muted">{{ description }}</span>{% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
                     {% else %}
-                        <p class="mb-0">No CMS MCP tools are registered.</p>
+                        <p class="mb-0">{{ 'chat.tools.empty'|trans }}</p>
                     {% endif %}
                 </div>
 
                 <div class="bg-white p-3 flex-grow-1 sfs-cms-ai-chatbot-tool-calls" id="mcp-chatbot-tool-calls">
-                    <h2 class="h5 mb-3">MCP Tool Calls</h2>
+                    <h2 class="h5 mb-3">{{ 'chat.calls.title'|trans }}</h2>
 
                     <div data-mcp-chatbot-tool-calls>
                         {% if tool_calls is not empty %}
@@ -160,18 +165,18 @@
                                     <p class="mb-2">
                                         <code>{{ call.name }}</code>
                                         {% if call.error %}
-                                            <span class="badge bg-danger ms-2">error</span>
+                                            <span class="badge bg-danger ms-2">{{ 'ui.error'|trans }}</span>
                                         {% endif %}
                                     </p>
 
-                                    <h3 class="h6">Arguments</h3>
+                                    <h3 class="h6">{{ 'ui.arguments'|trans }}</h3>
                                     <pre class="small">{{ call.arguments|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
-                                    <h3 class="h6">Result</h3>
+                                    <h3 class="h6">{{ 'ui.result'|trans }}</h3>
                                     <pre class="small mb-0">{{ call.content }}</pre>
                                 </div>
                             {% endfor %}
                         {% else %}
-                            <p class="text-muted mb-0" data-mcp-chatbot-tool-calls-empty>No tool calls yet.</p>
+                            <p class="text-muted mb-0" data-mcp-chatbot-tool-calls-empty>{{ 'chat.calls.empty'|trans }}</p>
                         {% endif %}
                     </div>
                 </div>

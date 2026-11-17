@@ -12,6 +12,7 @@ This plugin is in active development. It is useful for experimentation and early
 
 - Register as an Armonic CMS plugin with alias `sfs_cms_ai`.
 - Provide an admin Armonic AI chatbot screen for CMS MCP-assisted questions.
+- Translate the chat and editor interface into English and Spanish, including dynamic status labels and known CMS tool descriptions.
 - Extend the CMS content version edit screen with an AI agent panel.
 - Show server-side processing duration and provider token usage metadata in the MCP chatbot when available.
 - Provide a site-level AI settings tab in CMS site administration.
@@ -62,3 +63,22 @@ This plugin is in active development. It is useful for experimentation and early
 - Require chat input, text output and tool calling; the content editor also requires structured output.
 - Hide models absent from the platform catalog or missing required capabilities.
 - Allow older models only through explicit configuration, without automatic fallback.
+
+
+## Configurable AI instructions
+
+- Register the translated `cms` configuration block and associate AI instructions with its stable key.
+- Require Config Bundle and register the multiline `cms_ai.instructions` setting with an empty default.
+- Ship the Armonic application identity, task and priority rules in `config/prompts/application.txt`.
+- Compose application/workflow requirements before lower-priority Config Bundle preferences and the user request.
+- Preserve system/user message separation in text workflows and the same section order in image prompts.
+- Inject project preferences as a key-bound ConfigValueInterface with the SfsConfig attribute.
+- Read the application file and project preferences when preparing each prompt; fail explicitly if the application file is unavailable.
+- Protect edits and resets with `PERMISSION_SFS_CMS_ADMIN_AI_CONFIG` in addition to Config Bundle's global permissions.
+- Publish `ROLE_SFS_CMS_ADMIN_AI_CONFIG` through the plugin role hierarchy; applications decide which roles receive it.
+
+## Element usage instructions
+
+- Supply the API element instruction catalog in each newly prepared content-editor request.
+- Apply configured element guidance at project-preference priority, below application/workflow requirements.
+- Direct assistants to consult CMS context and operation instructions before choosing modules or other elements.

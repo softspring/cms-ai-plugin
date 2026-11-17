@@ -1,0 +1,4 @@
+security:
+    role_hierarchy:
+        ROLE_SFS_CMS_ADMIN_AI_CONFIG:
+            - PERMISSION_SFS_CMS_ADMIN_AI_CONFIG

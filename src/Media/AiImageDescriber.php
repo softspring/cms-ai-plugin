@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Softspring\CmsAiPlugin\Media;
 
 use RuntimeException;
+use Softspring\CmsAiPlugin\Instructions\AiInstructions;
 use Symfony\AI\Platform\Message\Content\Image;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
@@ -25,6 +26,7 @@ class AiImageDescriber
 
     public function __construct(
         protected ServiceLocator $platforms,
+        protected AiInstructions $instructions,
         protected string $defaultPlatform = 'openai',
         protected string $defaultModel = 'gpt-5-mini',
     ) {
@@ -46,12 +48,12 @@ class AiImageDescriber
         $model = $model ?: $this->defaultModel;
 
         $messages = new MessageBag();
-        $messages->add(Message::forSystem(<<<PROMPT
+        $messages->add(Message::forSystem($this->instructions->buildSystemPrompt(<<<PROMPT
 You describe CMS media images for editorial search and accessibility review.
 Return only a concise factual image description in English.
 Do not mention that you are an AI model.
 Do not invent people, brands, locations, or text that are not visible.
-PROMPT));
+PROMPT)));
         $messages->add(Message::ofUser(
             'Describe this uploaded CMS image in one or two short sentences.',
             Image::fromFile($path),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Softspring\CmsAiPlugin\Lab;
 
 use RuntimeException;
+use Softspring\CmsAiPlugin\Instructions\AiInstructions;
 use Softspring\CmsAiPlugin\Tool\ToolProviderInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
@@ -32,6 +33,7 @@ class McpChatLab
         protected ServiceLocator $platforms,
         protected RequestStack $requestStack,
         protected ChatModelChoices $modelChoices,
+        protected AiInstructions $instructions,
     ) {
     }
 
@@ -90,7 +92,7 @@ class McpChatLab
         }
 
         $messages = new MessageBag();
-        $messages->add(Message::forSystem(<<<PROMPT
+        $messages->add(Message::forSystem($this->instructions->buildSystemPrompt(<<<PROMPT
 You are a CMS assistant used to test MCP tools.
 Current admin locale: {$locale}
 Answer questions about the existing CMS configuration, content, sites, layouts, modules, blocks, menus, internal links and site analytics.
@@ -108,7 +110,7 @@ Do not display raw media ids, raw URLs, sha1 hashes, or full media version lists
 For editorial review tasks, gather the site context and the relevant published content, then answer with: fit assessment, mismatches, and suggested replacement copy.
 Prefer a useful final answer over repeatedly requesting more tools. If enough evidence is available, stop calling tools and answer.
 Keep the final answer concise and useful for an editor.
-PROMPT));
+PROMPT)));
 
         foreach ($history as $message) {
             if (!is_array($message) || !is_string($message['content'] ?? null)) {

@@ -9,6 +9,7 @@
         "doctrine/orm": "^2.10 || ^3.0 || ^4.0",
         "softspring/cms-api-plugin": "6.1.*@dev",
         "softspring/cms-bundle": "6.1.*@dev",
+        "softspring/config-bundle": "6.1.*@dev",
         "softspring/form-schema": "6.1.*@dev",
         "symfony/ai-bundle": "^0.10",
         "symfony/dependency-injection": "^6.4 || ^7.4 || ^8.0",

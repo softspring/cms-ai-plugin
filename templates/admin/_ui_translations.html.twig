@@ -1,0 +1,27 @@
+{% macro attributes() %}
+    data-ai-labels="{{ {
+        'draftUpdated': 'ui.draft_updated'|trans({}, 'sfs_cms_ai'),
+        'ready': 'ui.ready'|trans({}, 'sfs_cms_ai'),
+        'thinking': 'ui.thinking'|trans({}, 'sfs_cms_ai'),
+        'errorPrefix': 'ui.error_prefix'|trans({}, 'sfs_cms_ai'),
+        'unexpectedError': 'ui.unexpected_error'|trans({}, 'sfs_cms_ai'),
+        'unexpectedResponse': 'ui.unexpected_response'|trans({}, 'sfs_cms_ai'),
+        'invalidJson': 'ui.invalid_json'|trans({}, 'sfs_cms_ai'),
+        'nonJson': 'ui.non_json'|trans({}, 'sfs_cms_ai'),
+        'noCalls': 'ui.no_calls'|trans({}, 'sfs_cms_ai'),
+        'arguments': 'ui.arguments'|trans({}, 'sfs_cms_ai'),
+        'result': 'ui.result'|trans({}, 'sfs_cms_ai'),
+        'error': 'ui.error'|trans({}, 'sfs_cms_ai'),
+        'unknownTool': 'ui.unknown_tool'|trans({}, 'sfs_cms_ai'),
+        'input': 'ui.token_input'|trans({}, 'sfs_cms_ai'),
+        'output': 'ui.token_output'|trans({}, 'sfs_cms_ai'),
+        'reasoning': 'ui.token_reasoning'|trans({}, 'sfs_cms_ai'),
+        'tools': 'ui.token_tools'|trans({}, 'sfs_cms_ai'),
+        'cached': 'ui.token_cached'|trans({}, 'sfs_cms_ai'),
+        'noModel': 'ui.no_model'|trans({}, 'sfs_cms_ai'),
+        'invalidValue': 'ui.invalid_value'|trans({}, 'sfs_cms_ai'),
+        'validationWarning': 'ui.validation_warning'|trans({}, 'sfs_cms_ai'),
+        'moduleNotAllowed': 'ui.module_not_allowed'|trans({}, 'sfs_cms_ai'),
+        'moduleMissing': 'ui.module_missing'|trans({}, 'sfs_cms_ai')
+    }|json_encode|e('html_attr') }}"
+{% endmacro %}

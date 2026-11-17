@@ -1,6 +1,23 @@
 (function () {
     'use strict';
 
+    function translatedLabel(root, key, fallback, parameters = {}) {
+        root = root || document.querySelector('[data-cms-ai-content-editor-agent]');
+        let labels = {};
+        try {
+            labels = JSON.parse(root?.dataset.aiLabels || '{}');
+        } catch (error) {
+            // Keep the interface usable when translation data is unavailable.
+        }
+
+        let text = labels[key] || fallback;
+        Object.entries(parameters).forEach(([name, value]) => {
+            text = text.replaceAll(`%${name}%`, String(value));
+        });
+
+        return text;
+    }
+
     function escapeHtml(value) {
         return String(value)
             .replace(/&/g, '&amp;')
@@ -91,7 +108,7 @@
         return null;
     }
 
-    async function readJsonResponse(response) {
+    async function readJsonResponse(response, root) {
         const contentType = response.headers.get('Content-Type') || '';
         const text = await response.text();
         const trimmed = text.trim();
@@ -106,16 +123,16 @@
                     return JSON.parse(extracted);
                 }
 
-                throw new Error(`Invalid JSON response (${response.status}): ${error.message}`);
+                throw new Error(translatedLabel(root, 'invalidJson', 'Invalid JSON response (%status%): %message%', {status: response.status, message: error.message}));
             }
         }
 
         const title = trimmed.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
             || trimmed.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]
             || trimmed;
-        const message = htmlToText(title).slice(0, 240) || `Unexpected response (${response.status})`;
+        const message = htmlToText(title).slice(0, 240) || translatedLabel(root, 'unexpectedResponse', 'Unexpected response (%status%)', {status: response.status});
 
-        throw new Error(`Unexpected non-JSON response (${response.status}): ${message}`);
+        throw new Error(translatedLabel(root, 'nonJson', 'Unexpected non-JSON response (%status%): %message%', {status: response.status, message}));
     }
 
     function addMessage(thread, role, content, extraClass) {
@@ -343,12 +360,12 @@
 
         const allowed = (collection.dataset.modulesAllowed || '').split(',').filter(Boolean);
         if (allowed.length && !allowed.includes(moduleId)) {
-            throw new Error(`Module "${moduleId}" is not allowed in this collection.`);
+            throw new Error(translatedLabel(null, 'moduleNotAllowed', 'Module "%module%" is not allowed in this collection.', {module: moduleId}));
         }
 
         const button = findModulePrototypeButton(moduleId);
         if (!button) {
-            throw new Error(`Module prototype "${moduleId}" was not found.`);
+            throw new Error(translatedLabel(null, 'moduleMissing', 'Module prototype "%module%" was not found.', {module: moduleId}));
         }
 
         button.dataset.collectionTarget = collection.id;
@@ -527,7 +544,7 @@
         }
     }
 
-    function validationMessage(errors) {
+    function validationMessage(errors, root) {
         if (!errors || !errors.length) {
             return '';
         }
@@ -535,10 +552,10 @@
         const items = errors.slice(0, 5).map((error) => {
             const path = error.path ? `<code>${escapeHtml(error.path)}</code>: ` : '';
 
-            return `<li>${path}${escapeHtml(error.message || 'Invalid value')}</li>`;
+            return `<li>${path}${escapeHtml(error.message || translatedLabel(root, 'invalidValue', 'Invalid value'))}</li>`;
         }).join('');
 
-        return `<strong>Draft validation warning</strong><ul class="mb-0 mt-2">${items}</ul>`;
+        return `<strong>${escapeHtml(translatedLabel(root, 'validationWarning', 'Draft validation warning'))}</strong><ul class="mb-0 mt-2">${items}</ul>`;
     }
 
     async function sendInstruction(root) {
@@ -559,7 +576,7 @@
         }
 
         if (!platform?.value || !model?.value) {
-            showBox(root, '[data-cms-ai-content-editor-error]', 'No AI platform or model is configured.');
+            showBox(root, '[data-cms-ai-content-editor-error]', translatedLabel(root, 'noModel', 'No AI platform or model is configured.'));
             return;
         }
 
@@ -594,17 +611,17 @@
                     currentPayload,
                 }),
             });
-            const payload = await readJsonResponse(response);
+            const payload = await readJsonResponse(response, root);
 
             if (!response.ok || !payload.ok) {
-                throw new Error(payload.error || `Unexpected response (${response.status})`);
+                throw new Error(payload.error || translatedLabel(root, 'unexpectedResponse', 'Unexpected response (%status%)', {status: response.status}));
             }
 
             applyPayload(root, payload.payload || {}, !!payload.replaceCollections);
             showDebug(root, payload);
             thinking.remove();
-            addMessage(thread, 'assistant', payload.answer || 'Draft updated.');
-            showBox(root, '[data-cms-ai-content-editor-validation]', payload.isValid === false ? validationMessage(payload.errors || []) : '');
+            addMessage(thread, 'assistant', payload.answer || translatedLabel(root, 'draftUpdated', 'Draft updated.'));
+            showBox(root, '[data-cms-ai-content-editor-validation]', payload.isValid === false ? validationMessage(payload.errors || [], root) : '');
 
             if (input) {
                 input.value = '';
@@ -645,14 +662,14 @@
                     baseVersionId: root.dataset.baseVersionId || null,
                 }),
             });
-            const payload = await readJsonResponse(response);
+            const payload = await readJsonResponse(response, root);
 
             if (!response.ok || !payload.ok) {
-                throw new Error(payload.error || `Unexpected response (${response.status})`);
+                throw new Error(payload.error || translatedLabel(root, 'unexpectedResponse', 'Unexpected response (%status%)', {status: response.status}));
             }
 
             thread.innerHTML = '';
-            addMessage(thread, 'assistant', 'Ready.');
+            addMessage(thread, 'assistant', translatedLabel(root, 'ready', 'Ready.'));
             const debug = root.querySelector('[data-cms-ai-content-editor-debug]');
             debug && debug.classList.add('d-none');
 

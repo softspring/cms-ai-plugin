@@ -1,0 +1,5 @@
+cms_ai.instructions.label: "Instrucciones para IA"
+cms_ai.instructions.group: "Inteligencia artificial"
+cms_ai.instructions.help: "Preferencias del proyecto para los flujos de IA. Se aplican con menor prioridad que las instrucciones de Armonic y los requisitos de cada flujo."
+groups.cms.label: "CMS"
+groups.cms.description: "Configuración del gestor de contenidos y de inteligencia artificial."
