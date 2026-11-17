@@ -6,7 +6,9 @@ namespace Softspring\CmsAiPlugin\Lab;
 
 use JsonException;
 use RuntimeException;
+use Softspring\CmsAiPlugin\Instructions\AiInstructions;
 use Softspring\CmsAiPlugin\Tool\ToolProviderInterface;
+use Softspring\CmsApiPlugin\Application\Query\ElementInstructionsQuery;
 use Softspring\CmsApiPlugin\Application\Query\SiteQuery;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
@@ -41,6 +43,8 @@ class ContentEditorAgent
         private readonly SiteQuery $siteQuery,
         private readonly ServiceLocator $platforms,
         private readonly ChatModelChoices $modelChoices,
+        private readonly AiInstructions $instructions,
+        private readonly ElementInstructionsQuery $elementInstructions,
         private readonly int $maxExecutionTime = 240,
     ) {
     }
@@ -122,6 +126,7 @@ class ContentEditorAgent
             throw new RuntimeException('The selected model does not support this assistant. Choose a conversational model with tool support and structured output.');
         }
 
+        $context['elementInstructions'] = $this->elementInstructions->all();
         $contentType = (string) ($context['contentType'] ?? '');
         $layout = (string) ($context['layout'] ?? '');
         $currentPayload = $this->normalizeVersionPayload($context['currentPayload'] ?? [], $layout);
@@ -133,7 +138,7 @@ class ContentEditorAgent
         $instruction = $this->addSiteAiContextInstruction($instruction, $context, $siteContext);
 
         $messages = new MessageBag();
-        $messages->add(Message::forSystem($this->getSystemPrompt()));
+        $messages->add(Message::forSystem($this->instructions->buildSystemPrompt($this->getSystemPrompt())));
 
         foreach ($this->normalizeHistory($history) as $message) {
             if ('user' === $message['role']) {
@@ -167,6 +172,7 @@ PROMPT,
                 'locales' => $context['locales'] ?? [],
                 'sites' => $context['sites'] ?? [],
                 'selectedSiteContext' => $siteContext,
+                'elementInstructions' => $context['elementInstructions'],
                 'currentPayload' => $currentPayload,
             ]),
             $this->encodeJson($schema),

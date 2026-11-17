@@ -7,7 +7,9 @@ namespace Softspring\CmsAiPlugin\Admin\Menu;
 use Softspring\CmsBundle\Admin\Menu\AbstractSiteMenuProvider;
 use Softspring\CmsBundle\Admin\Menu\MenuItem;
 use Softspring\CmsBundle\Model\SiteInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
+#[AsTaggedItem(priority: 250)]
 class SiteMenuProvider extends AbstractSiteMenuProvider
 {
     public static function getPriority(): int

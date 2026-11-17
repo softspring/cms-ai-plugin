@@ -6,6 +6,7 @@ namespace Softspring\CmsAiPlugin\Seo\Content\Check;
 
 use JsonException;
 use RuntimeException;
+use Softspring\CmsAiPlugin\Instructions\AiInstructions;
 use Softspring\CmsBundle\Model\ContentVersionInterface;
 use Softspring\CmsSeoPlugin\Content\Check\CheckInterface;
 use Softspring\CmsSeoPlugin\Content\Check\SeoCheckContext;
@@ -34,6 +35,7 @@ class AiKeywordCoverageCheck implements CheckInterface
 
     public function __construct(
         protected ServiceLocator $platforms,
+        protected AiInstructions $instructions,
         protected string $defaultPlatform = 'gemini',
         protected string $defaultModel = 'gemini-2.5-flash',
     ) {
@@ -103,12 +105,12 @@ class AiKeywordCoverageCheck implements CheckInterface
     protected function analyze(PlatformInterface $platform, string $model, SeoCheckContext $context, array $keywords): array
     {
         $messages = new MessageBag();
-        $messages->add(Message::forSystem(<<<PROMPT
+        $messages->add(Message::forSystem($this->instructions->buildSystemPrompt(<<<PROMPT
 You are an SEO reviewer for public CMS pages.
 Review whether the visible public page content covers the configured SEO keywords naturally.
 Return only the requested JSON object.
 Do not suggest keyword stuffing.
-PROMPT));
+PROMPT)));
         $messages->add(Message::ofUser(sprintf(<<<PROMPT
 Public URL: %s
 Locale: %s

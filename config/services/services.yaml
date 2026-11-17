@@ -100,3 +100,6 @@ services:
 
     Softspring\CmsAiPlugin\Tool\ToolProviderInterface:
         alias: Softspring\CmsAiPlugin\Tool\NullToolProvider
+
+    Softspring\CmsAiPlugin\Instructions\:
+        resource: '../../src/Instructions/*'

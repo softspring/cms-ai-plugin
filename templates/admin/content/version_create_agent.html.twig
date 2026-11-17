@@ -1,5 +1,7 @@
 {% trans_default_domain 'sfs_cms_contents' %}
 
+{% import '@SfsCmsAiPlugin/admin/_ui_translations.html.twig' as ai_ui %}
+
 {% set sfs_components_theme = 'bootstrap5' %}
 {% set sfs_admin_lock_body_scroll = false %}
 {% set body_classes = (body_classes|default('') ~ ' cms-content-edit-page sfs-cms-ai-content-editor-page overflow-hidden')|trim %}
@@ -112,6 +114,7 @@
                 <div
                     class="sfs-cms-ai-content-agent"
                     data-cms-ai-content-editor-agent
+                    {{ ai_ui.attributes() }}
                     data-endpoint="{{ sfs_cms_ai_editor_agent.endpoint }}"
                     data-form-selector=".cms-content-edit-form"
                     data-form-name="{{ form.vars.full_name }}"
@@ -123,14 +126,14 @@
                     data-base-version-number="{{ sfs_cms_ai_editor_agent.base_version_number|default('') }}"
                     data-selected-locale-selector="#contentEditionLanguageSelection"
                     data-selected-site-selector="#contentEditionSiteSelection"
-                    data-thinking-label="Thinking..."
-                    data-error-prefix="Agent failed:"
+                    data-thinking-label="{{ 'ui.thinking'|trans({}, 'sfs_cms_ai') }}"
+                    data-error-prefix="{{ 'ui.error_prefix'|trans({}, 'sfs_cms_ai') }}"
                 >
                     <div class="sfs-cms-ai-content-agent-header">
                         <h2 class="h5 mb-0">Armonic AI</h2>
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-cms-ai-content-editor-reset>
                             <span class="bi bi-trash" aria-hidden="true"></span>
-                            New chat
+                            {{ 'chat.new'|trans({}, 'sfs_cms_ai') }}
                         </button>
                     </div>
 
@@ -143,40 +146,40 @@
                             {% endfor %}
                         {% else %}
                             <div class="sfs-cms-ai-content-agent-message sfs-cms-ai-content-agent-message-assistant">
-                                <div class="sfs-cms-ai-content-agent-message-body">Ready.</div>
+                                <div class="sfs-cms-ai-content-agent-message-body">{{ 'ui.ready'|trans({}, 'sfs_cms_ai') }}</div>
                             </div>
                         {% endif %}
                     </div>
 
                     <div class="sfs-cms-ai-content-agent-status text-muted small d-none" data-cms-ai-content-editor-status>
                         <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                        <span data-cms-ai-content-editor-status-text>Thinking...</span>
+                        <span data-cms-ai-content-editor-status-text>{{ 'ui.thinking'|trans({}, 'sfs_cms_ai') }}</span>
                     </div>
 
                     <div class="alert alert-danger d-none" data-cms-ai-content-editor-error></div>
                     <div class="alert alert-warning d-none" data-cms-ai-content-editor-validation></div>
                     <details class="sfs-cms-ai-content-agent-debug d-none" data-cms-ai-content-editor-debug>
-                        <summary>Payload JSON</summary>
+                        <summary>{{ 'editor.debug.title'|trans({}, 'sfs_cms_ai') }}</summary>
                         <div class="sfs-cms-ai-content-agent-debug-section">
-                            <div class="sfs-cms-ai-content-agent-debug-title">Patch payload</div>
+                            <div class="sfs-cms-ai-content-agent-debug-title">{{ 'editor.debug.patch'|trans({}, 'sfs_cms_ai') }}</div>
                             <pre data-cms-ai-content-editor-debug-payload></pre>
                         </div>
                         <div class="sfs-cms-ai-content-agent-debug-section">
-                            <div class="sfs-cms-ai-content-agent-debug-title">Merged payload</div>
+                            <div class="sfs-cms-ai-content-agent-debug-title">{{ 'editor.debug.merged'|trans({}, 'sfs_cms_ai') }}</div>
                             <pre data-cms-ai-content-editor-debug-merged-payload></pre>
                         </div>
                         <div class="sfs-cms-ai-content-agent-debug-section">
-                            <div class="sfs-cms-ai-content-agent-debug-title">Tool calls</div>
+                            <div class="sfs-cms-ai-content-agent-debug-title">{{ 'editor.debug.calls'|trans({}, 'sfs_cms_ai') }}</div>
                             <pre data-cms-ai-content-editor-debug-tool-calls></pre>
                         </div>
                         <div class="sfs-cms-ai-content-agent-debug-section">
-                            <div class="sfs-cms-ai-content-agent-debug-title">Raw response</div>
+                            <div class="sfs-cms-ai-content-agent-debug-title">{{ 'editor.debug.response'|trans({}, 'sfs_cms_ai') }}</div>
                             <pre data-cms-ai-content-editor-debug-raw-response></pre>
                         </div>
                     </details>
 
                     <div class="sfs-cms-ai-content-agent-form">
-                        <textarea class="form-control" rows="4" placeholder="Instruction..." data-cms-ai-content-editor-instruction></textarea>
+                        <textarea class="form-control" rows="4" placeholder="{{ 'editor.placeholder'|trans({}, 'sfs_cms_ai') }}" data-cms-ai-content-editor-instruction></textarea>
 
                         <div class="sfs-cms-ai-content-agent-controls">
                             <select class="form-select form-select-sm" data-cms-ai-content-editor-platform>
@@ -195,7 +198,7 @@
 
                         <button type="button" class="btn btn-primary w-100" data-cms-ai-content-editor-submit>
                             <span class="bi bi-send me-1" aria-hidden="true"></span>
-                            Send
+                            {{ 'chat.send'|trans({}, 'sfs_cms_ai') }}
                         </button>
                     </div>
 

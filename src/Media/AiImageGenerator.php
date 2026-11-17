@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Softspring\CmsAiPlugin\Media;
 
 use RuntimeException;
+use Softspring\CmsAiPlugin\Instructions\AiInstructions;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -15,6 +16,7 @@ class AiImageGenerator
         protected MediaImageGenerationRequirements $generationRequirements,
         protected string $openAiApiKey,
         protected string $geminiApiKey,
+        protected AiInstructions $instructions,
         protected string $defaultPlatform = 'openai',
         protected string $defaultModel = 'gpt-image-1',
     ) {
@@ -251,14 +253,13 @@ class AiImageGenerator
     {
         $requirements = $this->generationRequirements->buildPromptRequirements($uploadRequirements, $size);
 
-        return implode("\n", [
-            'Create a production-ready website media image from this prompt.',
-            'Avoid embedded text, logos, watermarks, UI chrome, borders, and captions unless the prompt explicitly asks for them.',
+        $workflowInstructions = implode("\n", [
+            'Create a production-ready website media image from the user request.',
+            'Avoid embedded text, logos, watermarks, UI chrome, borders, and captions unless the user request explicitly asks for them.',
             implode(' ', $requirements),
-            '',
-            'Prompt:',
-            $prompt,
         ]);
+
+        return $this->instructions->buildImagePrompt($workflowInstructions, $prompt);
     }
 
     protected function buildOriginalName(string $prompt, string $mimeType = 'image/png'): string

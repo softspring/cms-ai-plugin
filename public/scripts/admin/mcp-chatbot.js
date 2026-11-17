@@ -1,6 +1,22 @@
 (function () {
     'use strict';
 
+    function translatedLabel(root, key, fallback, parameters = {}) {
+        let labels = {};
+        try {
+            labels = JSON.parse(root?.dataset.aiLabels || '{}');
+        } catch (error) {
+            // Keep the interface usable when translation data is unavailable.
+        }
+
+        let text = labels[key] || fallback;
+        Object.entries(parameters).forEach(([name, value]) => {
+            text = text.replaceAll(`%${name}%`, String(value));
+        });
+
+        return text;
+    }
+
     function escapeHtml(value) {
         return String(value)
             .replace(/&/g, '&amp;')
@@ -132,25 +148,25 @@
         return `${seconds.toFixed(seconds < 10 ? 2 : 1)} s`;
     }
 
-    function formatTokenDetails(tokens) {
+    function formatTokenDetails(tokens, root) {
         if (!tokens || 'object' !== typeof tokens) {
             return null;
         }
 
         const details = [
-            ['prompt', 'in'],
-            ['completion', 'out'],
+            ['prompt', 'input'],
+            ['completion', 'output'],
             ['thinking', 'reasoning'],
             ['tool', 'tools'],
             ['cached', 'cached'],
         ]
             .filter(([key]) => Number.isFinite(tokens[key]) && tokens[key] > 0)
-            .map(([key, label]) => `${label} ${formatNumber(tokens[key])}`);
+            .map(([key, label]) => `${translatedLabel(root, label, label)} ${formatNumber(tokens[key])}`);
 
         return details.length ? details.join(', ') : null;
     }
 
-    function formatMetrics(metrics) {
+    function formatMetrics(metrics, root) {
         if (!metrics || 'object' !== typeof metrics) {
             return null;
         }
@@ -159,7 +175,7 @@
         const duration = formatDuration(Number(metrics.durationMs));
         const tokens = metrics.tokens && 'object' === typeof metrics.tokens ? metrics.tokens : null;
         const tokenTotal = tokens && Number.isFinite(tokens.total) ? tokens.total : null;
-        const tokenDetails = formatTokenDetails(tokens);
+        const tokenDetails = formatTokenDetails(tokens, root);
 
         if (duration) {
             parts.push(duration);
@@ -198,7 +214,7 @@
         contentWrapper.appendChild(body);
 
         if ('assistant' === role && !extraClass) {
-            const formattedMetrics = formatMetrics(metrics);
+            const formattedMetrics = formatMetrics(metrics, thread.closest('[data-mcp-chatbot]'));
             if (formattedMetrics) {
                 const meta = document.createElement('div');
                 meta.className = 'sfs-cms-ai-message-meta';
@@ -245,7 +261,7 @@
             return;
         }
 
-        error.textContent = message || 'Unexpected chatbot error.';
+        error.textContent = message || translatedLabel(root, 'unexpectedError', 'Unexpected assistant error.');
         error.classList.remove('d-none');
     }
 
@@ -259,7 +275,7 @@
         error.classList.add('d-none');
     }
 
-    function renderToolCalls(container, calls) {
+    function renderToolCalls(container, calls, root) {
         if (!container) {
             return;
         }
@@ -269,7 +285,7 @@
         if (!calls || !calls.length) {
             const empty = document.createElement('p');
             empty.className = 'text-muted mb-0';
-            empty.textContent = 'No MCP tools were called.';
+            empty.textContent = translatedLabel(root, 'noCalls', 'No MCP tools were called.');
             container.appendChild(empty);
             return;
         }
@@ -279,12 +295,12 @@
             wrapper.className = 'border-top pt-3 mt-3';
             wrapper.innerHTML = `
                 <p class="mb-2">
-                    <code>${escapeHtml(call.name || 'unknown_tool')}</code>
-                    ${call.error ? '<span class="badge bg-danger ms-2">error</span>' : ''}
+                    <code>${escapeHtml(call.name || translatedLabel(root, 'unknownTool', 'Unknown tool'))}</code>
+                    ${call.error ? `<span class="badge bg-danger ms-2">${escapeHtml(translatedLabel(root, 'error', 'error'))}</span>` : ''}
                 </p>
-                <h3 class="h6">Arguments</h3>
+                <h3 class="h6">${escapeHtml(translatedLabel(root, 'arguments', 'Arguments'))}</h3>
                 <pre class="small">${escapeHtml(formatJson(call.arguments))}</pre>
-                <h3 class="h6">Result</h3>
+                <h3 class="h6">${escapeHtml(translatedLabel(root, 'result', 'Result'))}</h3>
                 <pre class="small mb-0">${escapeHtml(formatJson(call.content))}</pre>
             `;
 
@@ -362,12 +378,12 @@
             const payload = contentType.includes('application/json') ? await response.json() : null;
 
             if (!response.ok || !payload || !payload.ok) {
-                throw new Error((payload && payload.error) || `Unexpected response (${response.status})`);
+                throw new Error((payload && payload.error) || translatedLabel(root, 'unexpectedResponse', 'Unexpected response (%status%)', {status: response.status}));
             }
 
             thinkingMessage.remove();
             addMessage(thread, 'assistant', payload.answer || '', null, payload.metrics || null);
-            renderToolCalls(toolCallsTarget, payload.toolCalls || []);
+            renderToolCalls(toolCallsTarget, payload.toolCalls || [], root);
 
             if (input) {
                 input.value = '';

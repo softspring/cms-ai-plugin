@@ -18,16 +18,20 @@ class McpChatbotForm extends AbstractType
             ->add('platform', ChoiceType::class, [
                 'choices' => $options['platforms'],
                 'required' => false,
-                'placeholder' => 'Default platform',
+                'placeholder' => 'chat.platform.placeholder',
+                'label' => 'chat.platform.label',
+                'choice_translation_domain' => false,
             ])
             ->add('model', ChoiceType::class, [
                 'choices' => $options['models'],
                 'required' => false,
-                'placeholder' => 'Choose a model',
+                'placeholder' => 'chat.model.placeholder',
+                'label' => 'chat.model.label',
                 'disabled' => [] === $options['models'],
                 'choice_translation_domain' => false,
             ])
             ->add('question', TextareaType::class, [
+                'label' => 'chat.question.label',
                 'required' => true,
                 'attr' => ['rows' => 5],
             ])
@@ -38,6 +42,7 @@ class McpChatbotForm extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => null,
+            'translation_domain' => 'sfs_cms_ai',
             'platforms' => [],
             'models' => [],
         ]);

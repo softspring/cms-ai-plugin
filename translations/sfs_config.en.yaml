@@ -1,0 +1,5 @@
+cms_ai.instructions.label: "AI instructions"
+cms_ai.instructions.group: "Artificial intelligence"
+cms_ai.instructions.help: "Project preferences for AI workflows. They apply below the Armonic application instructions and workflow requirements."
+groups.cms.label: "CMS"
+groups.cms.description: "Content management and artificial intelligence settings."
