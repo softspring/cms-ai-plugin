@@ -51,3 +51,7 @@ This plugin is in active development. It is useful for experimentation and early
 - MCP tools are read-only and expose published CMS data only.
 - The plugin does not configure AI platforms by itself; the host application must provide them.
 - AI-assisted admin requests can take longer than normal CMS requests and need aligned runtime timeouts in the host application.
+
+## Shared application services
+
+- AI agents consume ToolProviderInterface and use shared API-layer queries for site context. MCP integration is optional and the default provider exposes no tools.

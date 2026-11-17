@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Softspring\CmsAiPlugin\Lab;
 
-use Mcp\Capability\Registry\ReferenceHandler;
-use Mcp\Capability\RegistryInterface;
-use Mcp\Server;
-use Mcp\Server\Session\InMemorySessionStore;
-use Mcp\Server\Session\Session;
 use RuntimeException;
+use Softspring\CmsAiPlugin\Tool\ToolProviderInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\PlatformInterface;
@@ -21,8 +17,6 @@ use Symfony\AI\Platform\Result\ThinkingResult;
 use Symfony\AI\Platform\Result\ToolCall;
 use Symfony\AI\Platform\Result\ToolCallResult;
 use Symfony\AI\Platform\TokenUsage\TokenUsageInterface;
-use Symfony\AI\Platform\Tool\ExecutionReference;
-use Symfony\AI\Platform\Tool\Tool as PlatformTool;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Service\ResetInterface;
@@ -34,10 +28,8 @@ class McpChatLab
     protected const CMS_TOOL_PREFIX = 'sfs_cms_';
 
     public function __construct(
-        protected RegistryInterface $registry,
-        protected Server $server,
+        protected ToolProviderInterface $toolProvider,
         protected ServiceLocator $platforms,
-        protected ServiceLocator $mcpToolServices,
         protected RequestStack $requestStack,
     ) {
     }
@@ -76,23 +68,7 @@ class McpChatLab
 
     public function getAvailableTools(): array
     {
-        $tools = [];
-
-        foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, self::CMS_TOOL_PREFIX)) {
-                continue;
-            }
-
-            $tools[$tool->name] = [
-                'name' => $tool->name,
-                'description' => $tool->description,
-                'input_schema' => $tool->inputSchema,
-            ];
-        }
-
-        ksort($tools);
-
-        return $tools;
+        return $this->toolProvider->getDefinitions();
     }
 
     public function ask(string $question, ?string $model, ?string $platformName, array $history = []): array
@@ -204,32 +180,7 @@ PROMPT));
 
     protected function createPlatformTools(): array
     {
-        $tools = [];
-
-        foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, self::CMS_TOOL_PREFIX)) {
-                continue;
-            }
-
-            $reference = $this->registry->getTool($tool->name);
-            $handler = $reference->handler;
-
-            if (!is_array($handler)) {
-                continue;
-            }
-
-            $parameters = $tool->inputSchema;
-            $parameters['additionalProperties'] = false;
-
-            $tools[$tool->name] = new PlatformTool(
-                new ExecutionReference($handler[0], $handler[1]),
-                $tool->name,
-                $tool->description ?? 'CMS MCP tool',
-                $parameters,
-            );
-        }
-
-        return $tools;
+        return $this->toolProvider->getTools();
     }
 
     /**
@@ -258,13 +209,10 @@ PROMPT));
     protected function executeToolCall(ToolCall $toolCall): array
     {
         $toolName = $this->normalizeToolName($toolCall->getName());
-        $handler = new ReferenceHandler($this->mcpToolServices);
         $arguments = $toolCall->getArguments();
-        $arguments['_session'] = new Session(new InMemorySessionStore());
 
         try {
-            $reference = $this->registry->getTool($toolName);
-            $result = $handler->handle($reference, $arguments);
+            $result = $this->toolProvider->execute($toolName, $arguments);
             $content = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 
             return [

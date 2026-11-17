@@ -30,6 +30,11 @@ class SfsCmsAiExtension extends Extension implements PrependExtensionInterface
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config/services'));
         $loader->load('services.yaml');
 
+        $bundles = $container->hasParameter('kernel.bundles') ? $container->getParameter('kernel.bundles') : [];
+        if (in_array('Symfony\\AI\\McpBundle\\McpBundle', $bundles, true)) {
+            $loader->load('mcp.yaml');
+        }
+
         if ($this->isCmsSeoPluginAvailable()) {
             $loader->load('seo.yaml');
         }
