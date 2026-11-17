@@ -1,0 +1,9 @@
+services:
+    Softspring\CmsAiPlugin\Bridge\Mcp\McpToolProvider:
+        arguments:
+            $server: '@mcp.server'
+            $registry: '@mcp.registry'
+            $toolServices: !tagged_locator { tag: 'mcp.tool' }
+
+    Softspring\CmsAiPlugin\Tool\ToolProviderInterface:
+        alias: Softspring\CmsAiPlugin\Bridge\Mcp\McpToolProvider

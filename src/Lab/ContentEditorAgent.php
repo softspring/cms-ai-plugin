@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Softspring\CmsAiPlugin\Lab;
 
 use JsonException;
-use Mcp\Capability\Registry\ReferenceHandler;
-use Mcp\Capability\RegistryInterface;
-use Mcp\Server\Session\InMemorySessionStore;
-use Mcp\Server\Session\Session;
 use RuntimeException;
+use Softspring\CmsAiPlugin\Tool\ToolProviderInterface;
+use Softspring\CmsApiPlugin\Application\Query\SiteQuery;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\PlatformInterface;
@@ -21,8 +19,6 @@ use Symfony\AI\Platform\Result\ThinkingResult;
 use Symfony\AI\Platform\Result\ToolCall;
 use Symfony\AI\Platform\Result\ToolCallResult;
 use Symfony\AI\Platform\StructuredOutput\PlatformSubscriber;
-use Symfony\AI\Platform\Tool\ExecutionReference;
-use Symfony\AI\Platform\Tool\Tool as PlatformTool;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Contracts\Service\ResetInterface;
 use Throwable;
@@ -38,13 +34,12 @@ class ContentEditorAgent
 
     private const MAX_TOOL_ROUNDS = 5;
     private const MAX_HISTORY_MESSAGES = 20;
-    private const CMS_TOOL_PREFIX = 'sfs_cms_';
 
     public function __construct(
         private readonly ContentVersionPayloadContext $payloadContext,
-        private readonly RegistryInterface $registry,
+        private readonly ToolProviderInterface $toolProvider,
+        private readonly SiteQuery $siteQuery,
         private readonly ServiceLocator $platforms,
-        private readonly ServiceLocator $mcpToolServices,
         private readonly int $maxExecutionTime = 240,
     ) {
     }
@@ -83,23 +78,7 @@ class ContentEditorAgent
 
     public function getAvailableTools(): array
     {
-        $tools = [];
-
-        foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, self::CMS_TOOL_PREFIX)) {
-                continue;
-            }
-
-            $tools[$tool->name] = [
-                'name' => $tool->name,
-                'description' => $tool->description,
-                'input_schema' => $tool->inputSchema,
-            ];
-        }
-
-        ksort($tools);
-
-        return $tools;
+        return $this->toolProvider->getDefinitions();
     }
 
     public function buildConversationKey(string $contentType, string $contentId, ?string $baseVersionId, string $layout): string
@@ -338,32 +317,7 @@ PROMPT));
 
     private function createPlatformTools(): array
     {
-        $tools = [];
-
-        foreach ($this->registry->getTools()->references as $tool) {
-            if (!str_starts_with($tool->name, self::CMS_TOOL_PREFIX)) {
-                continue;
-            }
-
-            $reference = $this->registry->getTool($tool->name);
-            $handler = $reference->handler;
-
-            if (!is_array($handler)) {
-                continue;
-            }
-
-            $parameters = $tool->inputSchema;
-            $parameters['additionalProperties'] = false;
-
-            $tools[$tool->name] = new PlatformTool(
-                new ExecutionReference($handler[0], $handler[1]),
-                $tool->name,
-                $tool->description ?? 'CMS MCP tool',
-                $parameters,
-            );
-        }
-
-        return $tools;
+        return $this->toolProvider->getTools();
     }
 
     private function createAgentResponseFormat(): array
@@ -442,13 +396,10 @@ PROMPT;
     private function executeToolCall(ToolCall $toolCall): array
     {
         $toolName = $this->normalizeToolName($toolCall->getName());
-        $handler = new ReferenceHandler($this->mcpToolServices);
         $arguments = $toolCall->getArguments();
-        $arguments['_session'] = new Session(new InMemorySessionStore());
 
         try {
-            $reference = $this->registry->getTool($toolName);
-            $result = $handler->handle($reference, $arguments);
+            $result = $this->toolProvider->execute($toolName, $arguments);
             $content = $this->encodeJson($result);
 
             return [
@@ -519,20 +470,9 @@ PROMPT;
         }
 
         try {
-            $reference = $this->registry->getTool('sfs_cms_sites_get_context');
-            $handler = new ReferenceHandler($this->mcpToolServices);
-
-            $result = $handler->handle($reference, [
-                'site' => trim($selectedSite),
-                '_session' => new Session(new InMemorySessionStore()),
-            ]);
-
-            return is_array($result) ? $result : null;
+            return $this->siteQuery->getContext(trim($selectedSite));
         } catch (Throwable $e) {
-            return [
-                'error' => $e->getMessage(),
-                'type' => $e::class,
-            ];
+            return ['error' => $e->getMessage(), 'type' => $e::class];
         }
     }
 

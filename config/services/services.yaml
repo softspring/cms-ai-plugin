@@ -84,15 +84,15 @@ services:
 
     Softspring\CmsAiPlugin\Lab\McpChatLab:
         arguments:
-            $registry: '@mcp.registry'
-            $server: '@mcp.server'
             $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
-            $mcpToolServices: !tagged_locator { tag: 'mcp.tool' }
             $requestStack: '@request_stack'
 
     Softspring\CmsAiPlugin\Lab\ContentEditorAgent:
         arguments:
-            $registry: '@mcp.registry'
             $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }
-            $mcpToolServices: !tagged_locator { tag: 'mcp.tool' }
             $maxExecutionTime: '%sfs_cms_ai.content_editor.max_execution_time%'
+
+    Softspring\CmsAiPlugin\Tool\NullToolProvider: ~
+
+    Softspring\CmsAiPlugin\Tool\ToolProviderInterface:
+        alias: Softspring\CmsAiPlugin\Tool\NullToolProvider
