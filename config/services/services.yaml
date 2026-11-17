@@ -82,6 +82,10 @@ services:
             $enabledLocales: '%kernel.enabled_locales%'
             $defaultLocale: '%kernel.default_locale%'
 
+    Softspring\CmsAiPlugin\Lab\ChatModelChoices:
+        arguments:
+            $modelsByPlatform: '%sfs_cms_ai.assistant_models%'
+
     Softspring\CmsAiPlugin\Lab\McpChatLab:
         arguments:
             $platforms: !tagged_locator { tag: 'ai.platform', index_by: 'name' }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Softspring\CmsAiPlugin\DependencyInjection;
 
+use Softspring\CmsAiPlugin\Lab\ChatModelChoices;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -15,6 +16,17 @@ class Configuration implements ConfigurationInterface
 
         $treeBuilder->getRootNode()
             ->children()
+                ->arrayNode('assistant_models')
+                    ->useAttributeAsKey('platform')
+                    ->defaultValue(ChatModelChoices::DEFAULT_MODELS)
+                    ->validate()
+                        ->always(static fn (array $models): array => array_replace(ChatModelChoices::DEFAULT_MODELS, $models))
+                    ->end()
+                    ->arrayPrototype()
+                        ->performNoDeepMerging()
+                        ->scalarPrototype()->cannotBeEmpty()->end()
+                    ->end()
+                ->end()
                 ->arrayNode('http_client')
                     ->addDefaultsIfNotSet()
                     ->children()

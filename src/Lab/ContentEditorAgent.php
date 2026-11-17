@@ -40,6 +40,7 @@ class ContentEditorAgent
         private readonly ToolProviderInterface $toolProvider,
         private readonly SiteQuery $siteQuery,
         private readonly ServiceLocator $platforms,
+        private readonly ChatModelChoices $modelChoices,
         private readonly int $maxExecutionTime = 240,
     ) {
     }
@@ -58,11 +59,8 @@ class ContentEditorAgent
         }
 
         $platform = $this->getPlatform($platformName);
-        $models = array_keys($platform->getModelCatalog()->getModels());
 
-        sort($models);
-
-        return array_combine($models, $models);
+        return $this->modelChoices->forPlatform($platform, $platformName, true);
     }
 
     public function getModelsByPlatform(): array
@@ -118,6 +116,10 @@ class ContentEditorAgent
 
         if (!$model) {
             throw new RuntimeException('A model is required for the content editor agent.');
+        }
+
+        if (!isset($this->getModels($platformName)[$model])) {
+            throw new RuntimeException('The selected model does not support this assistant. Choose a conversational model with tool support and structured output.');
         }
 
         $contentType = (string) ($context['contentType'] ?? '');

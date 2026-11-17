@@ -48,10 +48,17 @@ This plugin is in active development. It is useful for experimentation and early
 - The content editor agent is experimental and depends on the browser form structure.
 - Generated content must be reviewed before use.
 - Model behavior is provider-dependent.
-- MCP tools are read-only and expose published CMS data only.
+- Available CMS tools and authorization are controlled by the installed tool provider and host application.
 - The plugin does not configure AI platforms by itself; the host application must provide them.
 - AI-assisted admin requests can take longer than normal CMS requests and need aligned runtime timeouts in the host application.
 
 ## Shared application services
 
 - AI agents consume ToolProviderInterface and use shared API-layer queries for site context. MCP integration is optional and the default provider exposes no tools.
+
+## Assistant model choices
+
+- Offer an ordered, configurable allowlist of current models for each AI platform.
+- Require chat input, text output and tool calling; the content editor also requires structured output.
+- Hide models absent from the platform catalog or missing required capabilities.
+- Allow older models only through explicit configuration, without automatic fallback.
