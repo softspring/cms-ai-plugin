@@ -136,3 +136,6 @@ tools.sfs_cms_seo_version_statistics.description: "Analiza las frecuencias, dens
 tools.sfs_cms_sites_get_context.description: "Consulta la configuración y los metadatos de un sitio."
 tools.sfs_cms_sites_list.description: "Lista los sitios configurados y sus URL canónicas."
 ui.draft_updated: "Borrador actualizado."
+
+editor.panel.open: "Abrir Armonic AI"
+editor.panel.close: "Ocultar Armonic AI"

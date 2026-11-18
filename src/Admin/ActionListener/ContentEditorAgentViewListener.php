@@ -9,6 +9,7 @@ use Softspring\CmsBundle\Model\ContentInterface;
 use Softspring\CmsBundle\Model\ContentVersionInterface;
 use Softspring\CmsBundle\SfsCmsEvents;
 use Softspring\Component\CrudlController\Event\ViewEvent;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -17,6 +18,7 @@ class ContentEditorAgentViewListener implements EventSubscriberInterface
     public function __construct(
         private readonly ContentEditorAgent $agent,
         private readonly RouterInterface $router,
+        #[Autowire(param: 'sfs_cms_ai.content_editor.enabled')] private readonly bool $enabled = true,
     ) {
     }
 
@@ -29,6 +31,10 @@ class ContentEditorAgentViewListener implements EventSubscriberInterface
 
     public function onContentVersionCreateView(ViewEvent $event): void
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $request = $event->getRequest();
         $contentConfig = $request->attributes->get('_content_config');
         $content = $request->attributes->get('content');

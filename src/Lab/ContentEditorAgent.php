@@ -395,6 +395,8 @@ Payload rules:
 - Set "replaceCollections" to true only when the instruction asks you to generate, rebuild, reorder, or remove a module collection. When it is true, include the complete array for every collection you replace.
 - Never include "_token", "_ok", "goto", or "module_prototypes_collection".
 - Do not change the layout.
+- For text-only edits, preserve all module identifiers, discriminator fields, collection indexes, and nesting. Never replace an existing module with a text string.
+- Every new module must include the discriminator required by its form-schema prototype. Do not invent module types or field names.
 - For translatable fields, preserve existing "_default" and "_trans_id" values when they are present.
 - For HTML fields, return valid, concise HTML fragments inside payload fields, not Markdown and not complete HTML documents.
 - If you need existing site, menu, link, media, or published content context, use the CMS tools before writing the payload.

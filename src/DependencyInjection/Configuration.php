@@ -37,6 +37,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('content_editor')
                     ->addDefaultsIfNotSet()
                     ->children()
+                        ->booleanNode('enabled')->defaultTrue()->end()
                         ->integerNode('max_execution_time')->defaultValue(240)->end()
                     ->end()
                 ->end()

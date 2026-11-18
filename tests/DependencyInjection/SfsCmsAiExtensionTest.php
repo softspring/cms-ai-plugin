@@ -13,6 +13,22 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class SfsCmsAiExtensionTest extends TestCase
 {
+    public function testContentEditorCanBeDisabled(): void
+    {
+        $container = new ContainerBuilder();
+        (new SfsCmsAiExtension())->load([['content_editor' => ['enabled' => false]]], $container);
+
+        self::assertFalse($container->getParameter('sfs_cms_ai.content_editor.enabled'));
+    }
+
+    public function testContentEditorIsEnabledByDefault(): void
+    {
+        $container = new ContainerBuilder();
+        (new SfsCmsAiExtension())->load([], $container);
+
+        self::assertTrue($container->getParameter('sfs_cms_ai.content_editor.enabled'));
+    }
+
     public function testMcpIsNotRequiredWhenTheBundleIsNotRegistered(): void
     {
         $container = new ContainerBuilder();

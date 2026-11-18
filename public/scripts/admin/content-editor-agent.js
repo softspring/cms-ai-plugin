@@ -614,7 +614,17 @@
             const payload = await readJsonResponse(response, root);
 
             if (!response.ok || !payload.ok) {
+                if (payload.isValid === false) {
+                    showDebug(root, payload);
+                    showBox(root, '[data-cms-ai-content-editor-validation]', validationMessage(payload.errors || [], root));
+                }
                 throw new Error(payload.error || translatedLabel(root, 'unexpectedResponse', 'Unexpected response (%status%)', {status: response.status}));
+            }
+
+            if (payload.isValid !== true) {
+                showDebug(root, payload);
+                showBox(root, '[data-cms-ai-content-editor-validation]', validationMessage(payload.errors || [], root));
+                throw new Error('The generated changes failed validation. The draft has not been changed.');
             }
 
             applyPayload(root, payload.payload || {}, !!payload.replaceCollections);
@@ -665,6 +675,10 @@
             const payload = await readJsonResponse(response, root);
 
             if (!response.ok || !payload.ok) {
+                if (payload.isValid === false) {
+                    showDebug(root, payload);
+                    showBox(root, '[data-cms-ai-content-editor-validation]', validationMessage(payload.errors || [], root));
+                }
                 throw new Error(payload.error || translatedLabel(root, 'unexpectedResponse', 'Unexpected response (%status%)', {status: response.status}));
             }
 
@@ -684,7 +698,45 @@
         }
     }
 
+    function initPanel(root) {
+        const shell = root.closest('.sfs-cms-ai-content-editor-shell');
+        const panel = root.closest('.sfs-cms-ai-content-agent-panel');
+        const launcher = shell?.querySelector('[data-cms-ai-panel-launcher]');
+        const open = shell?.querySelector('[data-cms-ai-panel-open]');
+        const close = root.querySelector('[data-cms-ai-panel-close]');
+        if (!panel || !launcher || !open || !close) {
+            return;
+        }
+
+        function setOpen(expanded) {
+            panel.hidden = !expanded;
+            launcher.hidden = expanded;
+            open.setAttribute('aria-expanded', String(expanded));
+            try {
+                document.cookie = `sfs_cms_ai_editor_panel=${expanded ? 'open' : 'closed'}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+            } catch (error) {
+                // Toggling remains available when browser cookie storage is blocked.
+            }
+            if (expanded) {
+                close.focus();
+            } else {
+                open.focus();
+            }
+        }
+
+        open.addEventListener('click', () => setOpen(true));
+        close.addEventListener('click', () => setOpen(false));
+        panel.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                setOpen(false);
+            }
+        });
+    }
+
     function init(root) {
+        initPanel(root);
         const input = root.querySelector('[data-cms-ai-content-editor-instruction]');
         const submit = root.querySelector('[data-cms-ai-content-editor-submit]');
         const reset = root.querySelector('[data-cms-ai-content-editor-reset]');

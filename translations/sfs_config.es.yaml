@@ -1,5 +1,5 @@
-cms_ai.instructions.label: "Instrucciones para IA"
+cms_ai.instructions.label: "Instrucciones de Armonic AI"
 cms_ai.instructions.group: "Inteligencia artificial"
-cms_ai.instructions.help: "Preferencias del proyecto para los flujos de IA. Se aplican con menor prioridad que las instrucciones de Armonic y los requisitos de cada flujo."
+cms_ai.instructions.help: "Instrucciones para Armonic AI: los chats del CMS, el asistente del editor y las demás funciones de IA integradas. No se aplican a agentes externos conectados por MCP. Tienen menor prioridad que las instrucciones internas de Armonic y los requisitos de cada función."
 groups.cms.label: "CMS"
 groups.cms.description: "Configuración del gestor de contenidos y de inteligencia artificial."

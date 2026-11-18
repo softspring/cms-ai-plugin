@@ -136,3 +136,6 @@ tools.sfs_cms_seo_version_statistics.description: "Analyze version word frequenc
 tools.sfs_cms_sites_get_context.description: "Read site configuration and metadata."
 tools.sfs_cms_sites_list.description: "List configured sites and their canonical URLs."
 ui.draft_updated: "Draft updated."
+
+editor.panel.open: "Open Armonic AI"
+editor.panel.close: "Hide Armonic AI"

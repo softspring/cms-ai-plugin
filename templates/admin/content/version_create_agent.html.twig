@@ -109,8 +109,16 @@
                 </div>
             </div>
         </header>
+        {% set ai_panel_open = app.request.cookies.get('sfs_cms_ai_editor_panel') == 'open' %}
         <div class="cms-content-main flex-fill d-flex flex-row align-items-stretch bg-light sfs-cms-ai-content-editor-shell">
-            <aside class="sfs-cms-ai-content-agent-panel bg-white border-end">
+            <div class="sfs-cms-ai-content-agent-launcher bg-white border-end" data-cms-ai-panel-launcher{% if ai_panel_open %} hidden{% endif %}>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-cms-ai-panel-open
+                        aria-controls="sfs-cms-ai-editor-panel" aria-expanded="{{ ai_panel_open ? 'true' : 'false' }}"
+                        aria-label="{{ 'editor.panel.open'|trans({}, 'sfs_cms_ai') }}" title="{{ 'editor.panel.open'|trans({}, 'sfs_cms_ai') }}">
+                    <span class="bi bi-stars" aria-hidden="true"></span>
+                </button>
+            </div>
+            <aside id="sfs-cms-ai-editor-panel" class="sfs-cms-ai-content-agent-panel bg-white border-end"{% if not ai_panel_open %} hidden{% endif %}>
                 <div
                     class="sfs-cms-ai-content-agent"
                     data-cms-ai-content-editor-agent
@@ -131,6 +139,11 @@
                 >
                     <div class="sfs-cms-ai-content-agent-header">
                         <h2 class="h5 mb-0">Armonic AI</h2>
+                        <button type="button" class="btn btn-outline-secondary btn-sm ms-auto" data-cms-ai-panel-close
+                                aria-controls="sfs-cms-ai-editor-panel" aria-label="{{ 'editor.panel.close'|trans({}, 'sfs_cms_ai') }}"
+                                title="{{ 'editor.panel.close'|trans({}, 'sfs_cms_ai') }}">
+                            <span class="bi bi-chevron-left" aria-hidden="true"></span>
+                        </button>
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-cms-ai-content-editor-reset>
                             <span class="bi bi-trash" aria-hidden="true"></span>
                             {{ 'chat.new'|trans({}, 'sfs_cms_ai') }}

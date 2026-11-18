@@ -164,3 +164,21 @@
         overflow: visible;
     }
 }
+
+.sfs-cms-ai-content-agent-panel[hidden],
+.sfs-cms-ai-content-agent-launcher[hidden] {
+    display: none !important;
+}
+
+.sfs-cms-ai-content-agent-launcher {
+    flex: 0 0 3rem;
+    width: 3rem;
+    padding: 0.5rem 0.25rem;
+}
+
+@media (max-width: 1199.98px) {
+    .sfs-cms-ai-content-agent-launcher {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+}

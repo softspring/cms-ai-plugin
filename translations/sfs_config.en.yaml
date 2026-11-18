@@ -1,5 +1,5 @@
-cms_ai.instructions.label: "AI instructions"
+cms_ai.instructions.label: "Armonic AI instructions"
 cms_ai.instructions.group: "Artificial intelligence"
-cms_ai.instructions.help: "Project preferences for AI workflows. They apply below the Armonic application instructions and workflow requirements."
+cms_ai.instructions.help: "Instructions for Armonic AI: CMS chats, the content editor assistant and other built-in AI features. They do not apply to external agents connected through MCP. They have lower priority than the internal Armonic instructions and each feature’s requirements."
 groups.cms.label: "CMS"
 groups.cms.description: "Content management and artificial intelligence settings."

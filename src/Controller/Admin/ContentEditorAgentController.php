@@ -10,6 +10,7 @@ use Softspring\CmsAiPlugin\Lab\ContentVersionPayloadContext;
 use Softspring\CmsBundle\Manager\ContentManagerInterface;
 use Softspring\CmsBundle\Model\ContentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +21,10 @@ use Throwable;
 
 class ContentEditorAgentController extends AbstractController
 {
+    public function __construct(#[Autowire(param: 'sfs_cms_ai.content_editor.enabled')] private readonly bool $enabled = true)
+    {
+    }
+
     #[Route('/content-editor-agent/{contentType}/{content}', name: 'sfs_cms_ai_admin_content_editor_agent', methods: ['POST'])]
     public function __invoke(
         string $contentType,
@@ -29,6 +34,10 @@ class ContentEditorAgentController extends AbstractController
         ContentVersionPayloadContext $payloadContext,
         ContentManagerInterface $contentManager,
     ): JsonResponse {
+        if (!$this->enabled) {
+            return new JsonResponse(['ok' => false, 'error' => 'The content editor AI assistant is disabled.'], Response::HTTP_NOT_FOUND);
+        }
+
         try {
             $payload = $this->getRequestPayload($request);
             $contentConfig = $payloadContext->getContentConfig($contentType);
@@ -88,6 +97,15 @@ class ContentEditorAgentController extends AbstractController
                 ],
                 $history,
             );
+
+            if (true !== $result['isValid']) {
+                return new JsonResponse([
+                    'ok' => false,
+                    'error' => 'The generated changes failed validation. The draft has not been changed.',
+                    'isValid' => false,
+                    'errors' => $result['errors'],
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
 
             $history[] = [
                 'role' => 'user',
